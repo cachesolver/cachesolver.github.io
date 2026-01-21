@@ -69,6 +69,7 @@
                     <button id="loadBtn" class="action-btn">Load from File</button>
                     <button id="saveBrowserBtn" class="action-btn browser-btn">Save to Browser</button>
                     <button id="loadBrowserBtn" class="action-btn browser-btn">Load from Browser</button>
+                    <button id="clearBtn" class="action-btn" style="background: #ef4444;">Clear All</button>
                     <input type="file" id="fileInput" accept=".json" style="display: none;" />
                 </div>
                 
@@ -453,6 +454,34 @@
             updateCalculatedCoordinate();
         }
 
+        function clearAll() {
+            if (!confirm('Are you sure you want to clear all fields? This cannot be undone.')) {
+                return;
+            }
+            
+            state.cacheName = '';
+            state.paramRange = 'A-B';
+            state.paramValues = {};
+            state.northSouth = 'N';
+            state.eastWest = 'E';
+            state.coordValues = ['','','','','','','','','','','','','','',''];
+            
+            document.getElementById('cacheName').value = '';
+            document.getElementById('paramRange').value = 'A-B';
+            document.getElementById('toggleNS').textContent = 'N';
+            document.getElementById('toggleEW').textContent = 'E';
+            document.getElementById('urlInput').value = '';
+            
+            updateParamInputs();
+            
+            var coordInputs = document.querySelectorAll('.coord-input');
+            for (var i = 0; i < coordInputs.length; i++) {
+                coordInputs[i].value = '';
+            }
+            
+            updateCalculatedCoordinate();
+        }
+
         function setupEventListeners() {
             document.getElementById('cacheName').addEventListener('input', function(e) {
                 state.cacheName = e.target.value;
@@ -468,6 +497,7 @@
             document.getElementById('saveBrowserBtn').addEventListener('click', saveToBrowser);
             document.getElementById('loadBrowserBtn').addEventListener('click', loadFromBrowser);
             document.getElementById('loadUrlBtn').addEventListener('click', loadFromUrl);
+            document.getElementById('clearBtn').addEventListener('click', clearAll);
             
             var coordInputs = document.querySelectorAll('.coord-input');
             for (var i = 0; i < coordInputs.length; i++) {
