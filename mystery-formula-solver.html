@@ -157,6 +157,14 @@
             setupEventListeners();
             updateParamInputs();
             updateCalculatedCoordinate();
+            
+            // Check for URL parameter
+            var urlParams = new URLSearchParams(window.location.search);
+            var loadUrl = urlParams.get('load');
+            if (loadUrl) {
+                document.getElementById('urlInput').value = loadUrl;
+                loadFromUrl();
+            }
         }
 
         function populateParamRangeSelect() {
