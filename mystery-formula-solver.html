@@ -51,15 +51,35 @@
                     <h1 class="title">Mystery Formula Solver</h1>
                 </div>
                 
+                <div class="form-group">
+                    <label class="label">Geocache Name/Code:</label>
+                    <input type="text" id="cacheName" class="input" placeholder="e.g., GC6KPVG" />
+                </div>
+                
                 <div class="result-box">
                     <h2 class="result-label">Calculated Coordinate:</h2>
                     <p class="result-value" id="calculatedCoord">N ° . E ° .</p>
                 </div>
                 
-                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
                     <button id="saveBtn" class="action-btn">Save Formula</button>
-                    <button id="loadBtn" class="action-btn">Load Formula</button>
+                    <button id="loadBtn" class="action-btn">Load from File</button>
                     <input type="file" id="fileInput" accept=".json" style="display: none;" />
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #374151; cursor: pointer;">
+                        <input type="checkbox" id="saveParamValues" checked style="cursor: pointer;" />
+                        <span>Save parameter values (A, B, C, etc.) when saving formula</span>
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label class="label">Load from URL:</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="urlInput" class="input" placeholder="https://example.com/formula.json" />
+                        <button id="loadUrlBtn" class="action-btn" style="white-space: nowrap;">Load URL</button>
+                    </div>
                 </div>
             </div>
 
@@ -118,6 +138,7 @@
 
     <script>
         var state = {
+            cacheName: '',
             paramRange: 'A-B',
             paramValues: {},
             northSouth: 'N',
@@ -130,6 +151,11 @@
             setupEventListeners();
             updateParamInputs();
             updateCalculatedCoordinate();
+            
+            var savedName = document.getElementById('cacheName').value;
+            if (savedName) {
+                state.cacheName = savedName;
+            }
         }
 
         function populateParamRangeSelect() {
@@ -243,22 +269,36 @@
         }
 
         function saveFormula() {
+            var cacheName = document.getElementById('cacheName').value.trim();
+            var saveParamValues = document.getElementById('saveParamValues').checked;
+            
             var data = {
+                cacheName: cacheName,
                 paramRange: state.paramRange,
-                paramValues: state.paramValues,
                 northSouth: state.northSouth,
                 eastWest: state.eastWest,
                 coordValues: state.coordValues
             };
+            
+            if (saveParamValues) {
+                data.paramValues = state.paramValues;
+            }
             
             var json = JSON.stringify(data, null, 2);
             var blob = new Blob([json], { type: 'application/json' });
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
             
-            var timestamp = new Date().toISOString().split('T')[0];
+            var filename;
+            if (cacheName) {
+                filename = cacheName + '.json';
+            } else {
+                var timestamp = new Date().toISOString().split('T')[0];
+                filename = 'GC_mystery_formula_' + timestamp + '.json';
+            }
+            
             a.href = url;
-            a.download = 'GC_mystery_formula_' + timestamp + '.json';
+            a.download = filename;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -273,28 +313,7 @@
             reader.onload = function(event) {
                 try {
                     var data = JSON.parse(event.target.result);
-                    
-                    state.paramRange = data.paramRange || 'A-B';
-                    state.paramValues = data.paramValues || {};
-                    state.northSouth = data.northSouth || 'N';
-                    state.eastWest = data.eastWest || 'E';
-                    state.coordValues = data.coordValues || ['','','','','','','','','','','','','','',''];
-                    
-                    document.getElementById('paramRange').value = state.paramRange;
-                    document.getElementById('toggleNS').textContent = state.northSouth;
-                    document.getElementById('toggleEW').textContent = state.eastWest;
-                    
-                    updateParamInputs();
-                    
-                    var coordInputs = document.querySelectorAll('.coord-input');
-                    for (var i = 0; i < coordInputs.length; i++) {
-                        var input = coordInputs[i];
-                        var index = parseInt(input.dataset.index);
-                        input.value = state.coordValues[index] || '';
-                    }
-                    
-                    updateCalculatedCoordinate();
-                    
+                    applyLoadedData(data);
                     alert('Formula loaded successfully!');
                 } catch (error) {
                     alert('Error loading file: ' + error.message);
@@ -304,7 +323,62 @@
             e.target.value = '';
         }
 
+        function loadFromUrl() {
+            var url = document.getElementById('urlInput').value.trim();
+            if (!url) {
+                alert('Please enter a URL');
+                return;
+            }
+            
+            var corsProxy = 'https://corsproxy.io/?';
+            var fetchUrl = url.startsWith('http://') || url.startsWith('https://') ? corsProxy + encodeURIComponent(url) : url;
+            
+            fetch(fetchUrl)
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.status);
+                    }
+                    return response.text();
+                })
+                .then(function(text) {
+                    var data = JSON.parse(text);
+                    applyLoadedData(data);
+                    alert('Formula loaded successfully from URL!');
+                })
+                .catch(function(error) {
+                    alert('Error loading from URL: ' + error.message + '\n\nNote: The URL must allow cross-origin requests or be a direct file link. You can try uploading the file directly using "Load from File" instead.');
+                });
+        }
+
+        function applyLoadedData(data) {
+            state.cacheName = data.cacheName || '';
+            state.paramRange = data.paramRange || 'A-B';
+            state.paramValues = data.paramValues || {};
+            state.northSouth = data.northSouth || 'N';
+            state.eastWest = data.eastWest || 'E';
+            state.coordValues = data.coordValues || ['','','','','','','','','','','','','','',''];
+            
+            document.getElementById('cacheName').value = state.cacheName;
+            document.getElementById('paramRange').value = state.paramRange;
+            document.getElementById('toggleNS').textContent = state.northSouth;
+            document.getElementById('toggleEW').textContent = state.eastWest;
+            
+            updateParamInputs();
+            
+            var coordInputs = document.querySelectorAll('.coord-input');
+            for (var i = 0; i < coordInputs.length; i++) {
+                var input = coordInputs[i];
+                var index = parseInt(input.dataset.index);
+                input.value = state.coordValues[index] || '';
+            }
+            
+            updateCalculatedCoordinate();
+        }
+
         function setupEventListeners() {
+            document.getElementById('cacheName').addEventListener('input', function(e) {
+                state.cacheName = e.target.value;
+            });
             document.getElementById('paramRange').addEventListener('change', handleParamRangeChange);
             document.getElementById('toggleNS').addEventListener('click', toggleNorthSouth);
             document.getElementById('toggleEW').addEventListener('click', toggleEastWest);
@@ -313,6 +387,7 @@
                 document.getElementById('fileInput').click();
             });
             document.getElementById('fileInput').addEventListener('change', loadFormula);
+            document.getElementById('loadUrlBtn').addEventListener('click', loadFromUrl);
             
             var coordInputs = document.querySelectorAll('.coord-input');
             for (var i = 0; i < coordInputs.length; i++) {
