@@ -30,6 +30,8 @@
         .coord-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
         .toggle-btn { padding: 0.5rem 1rem; background: #4f46e5; color: white; border: none; border-radius: 0.375rem; font-weight: 600; cursor: pointer; min-width: 60px; }
         .toggle-btn:hover { background: #4338ca; }
+        .action-btn { padding: 0.5rem 1rem; background: #10b981; color: white; border: none; border-radius: 0.375rem; font-weight: 600; cursor: pointer; }
+        .action-btn:hover { background: #059669; }
         .coord-input { width: 4rem; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; text-align: center; }
         .coord-input:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
         .separator { font-size: 1.25rem; font-weight: bold; }
@@ -52,6 +54,12 @@
                 <div class="result-box">
                     <h2 class="result-label">Calculated Coordinate:</h2>
                     <p class="result-value" id="calculatedCoord">N ° . E ° .</p>
+                </div>
+                
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button id="saveBtn" class="action-btn">Save Formula</button>
+                    <button id="loadBtn" class="action-btn">Load Formula</button>
+                    <input type="file" id="fileInput" accept=".json" style="display: none;" />
                 </div>
             </div>
 
@@ -109,16 +117,14 @@
     </div>
 
     <script>
-        // State
-        let state = {
+        var state = {
             paramRange: 'A-B',
             paramValues: {},
             northSouth: 'N',
             eastWest: 'E',
-            coordValues: Array(15).fill('')
+            coordValues: ['','','','','','','','','','','','','','','']
         };
 
-        // Initialize
         function init() {
             populateParamRangeSelect();
             setupEventListeners();
@@ -126,43 +132,41 @@
             updateCalculatedCoordinate();
         }
 
-        // Populate parameter range dropdown
         function populateParamRangeSelect() {
-            const select = document.getElementById('paramRange');
-            for (let i = 0; i < 26; i++) {
-                const option = document.createElement('option');
-                const end = String.fromCharCode(65 + i);
-                option.value = `A-${end}`;
-                option.textContent = `A-${end}`;
+            var select = document.getElementById('paramRange');
+            for (var i = 0; i < 26; i++) {
+                var option = document.createElement('option');
+                var end = String.fromCharCode(65 + i);
+                option.value = 'A-' + end;
+                option.textContent = 'A-' + end;
                 select.appendChild(option);
             }
             select.value = state.paramRange;
         }
 
-        // Get current parameters based on range
         function getCurrentParams() {
-            const endChar = state.paramRange.split('-')[1];
-            const count = endChar.charCodeAt(0) - 64;
-            const params = [];
-            for (let i = 0; i < count; i++) {
+            var endChar = state.paramRange.split('-')[1];
+            var count = endChar.charCodeAt(0) - 64;
+            var params = [];
+            for (var i = 0; i < count; i++) {
                 params.push(String.fromCharCode(65 + i));
             }
             return params;
         }
 
-        // Update parameter inputs
         function updateParamInputs() {
-            const container = document.getElementById('paramInputs');
+            var container = document.getElementById('paramInputs');
             container.innerHTML = '';
             
-            const params = getCurrentParams();
-            params.forEach(param => {
-                const div = document.createElement('div');
-                const label = document.createElement('label');
+            var params = getCurrentParams();
+            for (var i = 0; i < params.length; i++) {
+                var param = params[i];
+                var div = document.createElement('div');
+                var label = document.createElement('label');
                 label.className = 'label';
-                label.textContent = `${param}:`;
+                label.textContent = param + ':';
                 
-                const input = document.createElement('input');
+                var input = document.createElement('input');
                 input.type = 'number';
                 input.className = 'input';
                 input.placeholder = 'Value';
@@ -173,37 +177,40 @@
                 div.appendChild(label);
                 div.appendChild(input);
                 container.appendChild(div);
-            });
+            }
         }
 
-        // Evaluate formula
         function evaluateFormula(formula) {
             if (!formula || formula.trim() === '') return '';
             if (!isNaN(formula)) return formula;
             
-            let expression = formula;
-            for (const [param, value] of Object.entries(state.paramValues)) {
-                if (value !== '') {
-                    expression = expression.replace(new RegExp(param, 'g'), value);
+            var expression = formula;
+            for (var param in state.paramValues) {
+                if (state.paramValues.hasOwnProperty(param)) {
+                    var value = state.paramValues[param];
+                    if (value !== '') {
+                        expression = expression.replace(new RegExp(param, 'g'), value);
+                    }
                 }
             }
             
             try {
-                const result = eval(expression);
+                var result = eval(expression);
                 return Math.floor(result).toString();
             } catch (e) {
                 return '?';
             }
         }
 
-        // Update calculated coordinate
         function updateCalculatedCoordinate() {
-            const vals = state.coordValues.map(v => evaluateFormula(v));
-            const coord = `${state.northSouth} ${vals[0]}${vals[1]}° ${vals[2]}${vals[3]}.${vals[4]}${vals[5]}${vals[6]} ${state.eastWest} ${vals[7]}${vals[8]}${vals[9]}° ${vals[10]}${vals[11]}.${vals[12]}${vals[13]}${vals[14]}`;
+            var vals = [];
+            for (var i = 0; i < state.coordValues.length; i++) {
+                vals.push(evaluateFormula(state.coordValues[i]));
+            }
+            var coord = state.northSouth + ' ' + vals[0] + vals[1] + '° ' + vals[2] + vals[3] + '.' + vals[4] + vals[5] + vals[6] + ' ' + state.eastWest + ' ' + vals[7] + vals[8] + vals[9] + '° ' + vals[10] + vals[11] + '.' + vals[12] + vals[13] + vals[14];
             document.getElementById('calculatedCoord').textContent = coord;
         }
 
-        // Event handlers
         function handleParamRangeChange(e) {
             state.paramRange = e.target.value;
             state.paramValues = {};
@@ -212,13 +219,13 @@
         }
 
         function handleParamInput(e) {
-            const param = e.target.dataset.param;
+            var param = e.target.dataset.param;
             state.paramValues[param] = e.target.value;
             updateCalculatedCoordinate();
         }
 
         function handleCoordInput(e) {
-            const index = parseInt(e.target.dataset.index);
+            var index = parseInt(e.target.dataset.index);
             state.coordValues[index] = e.target.value;
             updateCalculatedCoordinate();
         }
@@ -235,18 +242,84 @@
             updateCalculatedCoordinate();
         }
 
-        // Setup event listeners
+        function saveFormula() {
+            var data = {
+                paramRange: state.paramRange,
+                paramValues: state.paramValues,
+                northSouth: state.northSouth,
+                eastWest: state.eastWest,
+                coordValues: state.coordValues
+            };
+            
+            var json = JSON.stringify(data, null, 2);
+            var blob = new Blob([json], { type: 'application/json' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            
+            var timestamp = new Date().toISOString().split('T')[0];
+            a.href = url;
+            a.download = 'GC_mystery_formula_' + timestamp + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function loadFormula(e) {
+            var file = e.target.files[0];
+            if (!file) return;
+            
+            var reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    var data = JSON.parse(event.target.result);
+                    
+                    state.paramRange = data.paramRange || 'A-B';
+                    state.paramValues = data.paramValues || {};
+                    state.northSouth = data.northSouth || 'N';
+                    state.eastWest = data.eastWest || 'E';
+                    state.coordValues = data.coordValues || ['','','','','','','','','','','','','','',''];
+                    
+                    document.getElementById('paramRange').value = state.paramRange;
+                    document.getElementById('toggleNS').textContent = state.northSouth;
+                    document.getElementById('toggleEW').textContent = state.eastWest;
+                    
+                    updateParamInputs();
+                    
+                    var coordInputs = document.querySelectorAll('.coord-input');
+                    for (var i = 0; i < coordInputs.length; i++) {
+                        var input = coordInputs[i];
+                        var index = parseInt(input.dataset.index);
+                        input.value = state.coordValues[index] || '';
+                    }
+                    
+                    updateCalculatedCoordinate();
+                    
+                    alert('Formula loaded successfully!');
+                } catch (error) {
+                    alert('Error loading file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        }
+
         function setupEventListeners() {
             document.getElementById('paramRange').addEventListener('change', handleParamRangeChange);
             document.getElementById('toggleNS').addEventListener('click', toggleNorthSouth);
             document.getElementById('toggleEW').addEventListener('click', toggleEastWest);
-            
-            document.querySelectorAll('.coord-input').forEach(input => {
-                input.addEventListener('input', handleCoordInput);
+            document.getElementById('saveBtn').addEventListener('click', saveFormula);
+            document.getElementById('loadBtn').addEventListener('click', function() {
+                document.getElementById('fileInput').click();
             });
+            document.getElementById('fileInput').addEventListener('change', loadFormula);
+            
+            var coordInputs = document.querySelectorAll('.coord-input');
+            for (var i = 0; i < coordInputs.length; i++) {
+                coordInputs[i].addEventListener('input', handleCoordInput);
+            }
         }
 
-        // Start the app
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
