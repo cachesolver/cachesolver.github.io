@@ -40,7 +40,100 @@
         .tip-box { margin-top: 1rem; padding: 1rem; background: #f9fafb; border-radius: 0.375rem; }
         .tip-text { font-size: 0.875rem; color: #4b5563; }
         .help-text { font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem; }
-        .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+        .formula-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .formula-item {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .formula-item:hover {
+            background: #f3f4f6;
+            border-color: #4f46e5;
+        }
+        .formula-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        .formula-code {
+            font-size: 0.875rem;
+            color: #4f46e5;
+            font-family: monospace;
+        }
+        .formula-date {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+        .modal-actions {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .modal-close {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .modal-close:hover {
+            background: #4b5563;
+        }
     </style>
 </head>
 <body>
@@ -55,8 +148,13 @@
                 </div>
                 
                 <div class="form-group">
-                    <label class="label">Geocache Name/Code:</label>
-                    <input type="text" id="cacheName" class="input" placeholder="e.g., GC6KPVG" />
+                    <label class="label">Geocache Code (for filename):</label>
+                    <input type="text" id="cacheCode" class="input" placeholder="e.g., GC6KPVG" />
+                </div>
+                
+                <div class="form-group">
+                    <label class="label">Geocache Name (optional):</label>
+                    <input type="text" id="cacheName" class="input" placeholder="e.g., Mystery in the Forest" />
                 </div>
                 
                 <div class="result-box">
@@ -142,8 +240,19 @@
         </div>
     </div>
 
+    <div id="loadModal" class="modal-overlay">
+        <div class="modal">
+            <h2 class="modal-title">Load Saved Formula</h2>
+            <ul id="formulaList" class="formula-list"></ul>
+            <div class="modal-actions">
+                <button id="closeModal" class="modal-close">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         var state = {
+            cacheCode: '',
             cacheName: '',
             paramRange: 'A-B',
             paramValues: {},
@@ -278,10 +387,12 @@
         }
 
         function saveFormula() {
+            var cacheCode = document.getElementById('cacheCode').value.trim();
             var cacheName = document.getElementById('cacheName').value.trim();
             var saveParamValues = document.getElementById('saveParamValues').checked;
             
             var data = {
+                cacheCode: cacheCode,
                 cacheName: cacheName,
                 paramRange: state.paramRange,
                 northSouth: state.northSouth,
@@ -299,8 +410,8 @@
             var a = document.createElement('a');
             
             var filename;
-            if (cacheName) {
-                filename = cacheName + '.json';
+            if (cacheCode) {
+                filename = cacheCode + '.json';
             } else {
                 var timestamp = new Date().toISOString().split('T')[0];
                 filename = 'GC_mystery_formula_' + timestamp + '.json';
@@ -333,15 +444,18 @@
         }
 
         function saveToBrowser() {
+            var cacheCode = document.getElementById('cacheCode').value.trim();
             var cacheName = document.getElementById('cacheName').value.trim();
-            if (!cacheName) {
-                alert('Please enter a Geocache Name/Code before saving to browser');
+            
+            if (!cacheCode) {
+                alert('Please enter a Geocache Code before saving to browser');
                 return;
             }
             
             var saveParamValues = document.getElementById('saveParamValues').checked;
             
             var data = {
+                cacheCode: cacheCode,
                 cacheName: cacheName,
                 paramRange: state.paramRange,
                 northSouth: state.northSouth,
@@ -355,17 +469,17 @@
             }
             
             try {
-                var storageKey = 'gc_formula_' + cacheName;
+                var storageKey = 'gc_formula_' + cacheCode;
                 localStorage.setItem(storageKey, JSON.stringify(data));
                 
                 var savedList = localStorage.getItem('gc_formula_list');
                 var list = savedList ? JSON.parse(savedList) : [];
-                if (list.indexOf(cacheName) === -1) {
-                    list.push(cacheName);
+                if (list.indexOf(cacheCode) === -1) {
+                    list.push(cacheCode);
                     localStorage.setItem('gc_formula_list', JSON.stringify(list));
                 }
                 
-                alert('Formula saved to browser storage as "' + cacheName + '"');
+                alert('Formula saved to browser storage as "' + cacheCode + '"');
             } catch (e) {
                 alert('Error saving to browser: ' + e.message);
             }
@@ -385,28 +499,112 @@
                     return;
                 }
                 
-                var message = 'Saved formulas:\n\n';
+                var modal = document.getElementById('loadModal');
+                var formulaList = document.getElementById('formulaList');
+                formulaList.innerHTML = '';
+                
                 for (var i = 0; i < list.length; i++) {
-                    message += (i + 1) + '. ' + list[i] + '\n';
+                    var cacheCode = list[i];
+                    var storageKey = 'gc_formula_' + cacheCode;
+                    var savedData = localStorage.getItem(storageKey);
+                    
+                    if (savedData) {
+                        var data = JSON.parse(savedData);
+                        var li = document.createElement('li');
+                        li.className = 'formula-item';
+                        
+                        var div = document.createElement('div');
+                        div.style.flex = '1';
+                        div.style.cursor = 'pointer';
+                        
+                        var nameDiv = document.createElement('div');
+                        nameDiv.className = 'formula-name';
+                        nameDiv.textContent = data.cacheName || cacheCode;
+                        
+                        var codeDiv = document.createElement('div');
+                        codeDiv.className = 'formula-code';
+                        codeDiv.textContent = cacheCode;
+                        
+                        var dateDiv = document.createElement('div');
+                        dateDiv.className = 'formula-date';
+                        if (data.savedAt) {
+                            var date = new Date(data.savedAt);
+                            dateDiv.textContent = 'Saved: ' + date.toLocaleString();
+                        }
+                        
+                        div.appendChild(nameDiv);
+                        div.appendChild(codeDiv);
+                        div.appendChild(dateDiv);
+                        
+                        div.onclick = (function(code) {
+                            return function() {
+                                loadFormulaByCode(code);
+                                modal.classList.remove('active');
+                            };
+                        })(cacheCode);
+                        
+                        var deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'delete-btn';
+                        deleteBtn.textContent = 'Delete';
+                        deleteBtn.onclick = (function(code) {
+                            return function(e) {
+                                e.stopPropagation();
+                                deleteFormula(code);
+                            };
+                        })(cacheCode);
+                        
+                        li.appendChild(div);
+                        li.appendChild(deleteBtn);
+                        formulaList.appendChild(li);
+                    }
                 }
-                message += '\nEnter the name of the formula to load:';
                 
-                var selectedName = prompt(message);
-                if (!selectedName) return;
-                
-                var storageKey = 'gc_formula_' + selectedName;
+                modal.classList.add('active');
+            } catch (e) {
+                alert('Error loading from browser: ' + e.message);
+            }
+        }
+
+        function loadFormulaByCode(code) {
+            try {
+                var storageKey = 'gc_formula_' + code;
                 var savedData = localStorage.getItem(storageKey);
                 
                 if (!savedData) {
-                    alert('Formula "' + selectedName + '" not found');
+                    alert('Formula "' + code + '" not found');
                     return;
                 }
                 
                 var data = JSON.parse(savedData);
                 applyLoadedData(data);
-                alert('Formula "' + selectedName + '" loaded successfully!');
+                alert('Formula "' + code + '" loaded successfully!');
             } catch (e) {
-                alert('Error loading from browser: ' + e.message);
+                alert('Error loading formula: ' + e.message);
+            }
+        }
+
+        function deleteFormula(code) {
+            if (!confirm('Are you sure you want to delete "' + code + '"?')) {
+                return;
+            }
+            
+            try {
+                var storageKey = 'gc_formula_' + code;
+                localStorage.removeItem(storageKey);
+                
+                var savedList = localStorage.getItem('gc_formula_list');
+                if (savedList) {
+                    var list = JSON.parse(savedList);
+                    var index = list.indexOf(code);
+                    if (index > -1) {
+                        list.splice(index, 1);
+                        localStorage.setItem('gc_formula_list', JSON.stringify(list));
+                    }
+                }
+                
+                loadFromBrowser();
+            } catch (e) {
+                alert('Error deleting formula: ' + e.message);
             }
         }
 
@@ -438,6 +636,7 @@
         }
 
         function applyLoadedData(data) {
+            state.cacheCode = data.cacheCode || '';
             state.cacheName = data.cacheName || '';
             state.paramRange = data.paramRange || 'A-B';
             state.paramValues = data.paramValues || {};
@@ -445,6 +644,7 @@
             state.eastWest = data.eastWest || 'E';
             state.coordValues = data.coordValues || ['','','','','','','','','','','','','','',''];
             
+            document.getElementById('cacheCode').value = state.cacheCode;
             document.getElementById('cacheName').value = state.cacheName;
             document.getElementById('paramRange').value = state.paramRange;
             document.getElementById('toggleNS').textContent = state.northSouth;
@@ -467,6 +667,7 @@
                 return;
             }
             
+            state.cacheCode = '';
             state.cacheName = '';
             state.paramRange = 'A-B';
             state.paramValues = {};
@@ -474,6 +675,7 @@
             state.eastWest = 'E';
             state.coordValues = ['','','','','','','','','','','','','','',''];
             
+            document.getElementById('cacheCode').value = '';
             document.getElementById('cacheName').value = '';
             document.getElementById('paramRange').value = 'A-B';
             document.getElementById('toggleNS').textContent = 'N';
@@ -491,6 +693,9 @@
         }
 
         function setupEventListeners() {
+            document.getElementById('cacheCode').addEventListener('input', function(e) {
+                state.cacheCode = e.target.value;
+            });
             document.getElementById('cacheName').addEventListener('input', function(e) {
                 state.cacheName = e.target.value;
             });
@@ -506,6 +711,16 @@
             document.getElementById('loadBrowserBtn').addEventListener('click', loadFromBrowser);
             document.getElementById('loadUrlBtn').addEventListener('click', loadFromUrl);
             document.getElementById('clearBtn').addEventListener('click', clearAll);
+            
+            document.getElementById('closeModal').addEventListener('click', function() {
+                document.getElementById('loadModal').classList.remove('active');
+            });
+            
+            document.getElementById('loadModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
             
             var coordInputs = document.querySelectorAll('.coord-input');
             for (var i = 0; i < coordInputs.length; i++) {
