@@ -1,0 +1,359 @@
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+}
+
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(to bottom right, #eff6ff, #e0e7ff);
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+#header-frame, #footer-frame {
+    width: 100%;
+    border: none;
+    display: block;
+}
+
+#header-frame {
+    margin-bottom: 2rem;
+}
+
+#footer-frame {
+    margin-top: 2rem;
+}
+
+.container { 
+    max-width: 64rem; 
+    margin: 0 auto; 
+}
+
+.card { 
+    background: white; 
+    border-radius: 0.5rem; 
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
+    padding: 1.5rem; 
+    margin-bottom: 1.5rem; 
+}
+
+.header { 
+    display: flex; 
+    align-items: center; 
+    gap: 0.75rem; 
+    margin-bottom: 1rem; 
+}
+
+.title { 
+    font-size: 1.875rem; 
+    font-weight: bold; 
+    color: #1f2937; 
+}
+
+.icon { 
+    width: 32px; 
+    height: 32px; 
+    color: #4f46e5; 
+}
+
+.section-title { 
+    font-size: 1.25rem; 
+    font-weight: bold; 
+    color: #1f2937; 
+    margin-bottom: 1rem; 
+}
+
+.form-group { 
+    margin-bottom: 1rem; 
+}
+
+.label { 
+    display: block; 
+    font-size: 0.875rem; 
+    font-weight: 500; 
+    color: #374151; 
+    margin-bottom: 0.5rem; 
+}
+
+.select, .input { 
+    width: 100%; 
+    padding: 0.5rem 0.75rem; 
+    border: 1px solid #d1d5db; 
+    border-radius: 0.375rem; 
+    font-size: 1rem; 
+}
+
+.select:focus, .input:focus { 
+    outline: none; 
+    border-color: #4f46e5; 
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); 
+}
+
+.grid { 
+    display: grid; 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 1rem; 
+}
+
+@media (min-width: 768px) { 
+    .grid { 
+        grid-template-columns: repeat(3, 1fr); 
+    } 
+}
+
+.coord-row { 
+    display: flex; 
+    align-items: center; 
+    gap: 0.5rem; 
+    margin-bottom: 1rem; 
+    flex-wrap: wrap; 
+}
+
+.toggle-btn { 
+    padding: 0.5rem 1rem; 
+    background: #4f46e5; 
+    color: white; 
+    border: none; 
+    border-radius: 0.375rem; 
+    font-weight: 600; 
+    cursor: pointer; 
+    min-width: 60px; 
+}
+
+.toggle-btn:hover { 
+    background: #4338ca; 
+}
+
+.action-btn { 
+    padding: 0.5rem 1rem; 
+    background: #10b981; 
+    color: white; 
+    border: none; 
+    border-radius: 0.375rem; 
+    font-weight: 600; 
+    cursor: pointer; 
+}
+
+.action-btn:hover { 
+    background: #059669; 
+}
+
+.browser-btn { 
+    background: #f59e0b; 
+}
+
+.browser-btn:hover { 
+    background: #d97706; 
+}
+
+.clear-btn {
+    background: #ef4444;
+}
+
+.clear-btn:hover {
+    background: #dc2626;
+}
+
+.coord-input { 
+    width: 4rem; 
+    padding: 0.5rem; 
+    border: 1px solid #d1d5db; 
+    border-radius: 0.375rem; 
+    text-align: center; 
+}
+
+.coord-input:focus { 
+    outline: none; 
+    border-color: #4f46e5; 
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); 
+}
+
+.separator { 
+    font-size: 1.25rem; 
+    font-weight: bold; 
+}
+
+.tip-box { 
+    margin-top: 1rem; 
+    padding: 1rem; 
+    background: #f9fafb; 
+    border-radius: 0.375rem; 
+}
+
+.tip-text { 
+    font-size: 0.875rem; 
+    color: #4b5563; 
+}
+
+.help-text { 
+    font-size: 0.875rem; 
+    color: #6b7280; 
+    margin-bottom: 1rem; 
+}
+
+.btn-group { 
+    display: flex; 
+    gap: 0.5rem; 
+    flex-wrap: wrap; 
+    margin-bottom: 1rem; 
+}
+
+.waypoint-card { 
+    background: white; 
+    border: 2px solid #c7d2fe; 
+    border-radius: 0.5rem; 
+    padding: 1.5rem; 
+    margin-bottom: 1.5rem; 
+}
+
+.waypoint-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 1rem; 
+    padding-bottom: 0.5rem; 
+    border-bottom: 2px solid #e5e7eb; 
+}
+
+.waypoint-title { 
+    font-size: 1.25rem; 
+    font-weight: bold; 
+    color: #4f46e5; 
+}
+
+.waypoint-result { 
+    background: #eef2ff; 
+    border: 2px solid #c7d2fe; 
+    border-radius: 0.5rem; 
+    padding: 1rem; 
+    margin-bottom: 1rem; 
+}
+
+.waypoint-result-label { 
+    font-size: 0.875rem; 
+    font-weight: 600; 
+    color: #374151; 
+    margin-bottom: 0.25rem; 
+}
+
+.waypoint-result-value { 
+    font-size: 1.125rem; 
+    font-family: monospace; 
+    color: #4f46e5; 
+}
+
+.modal-overlay { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    bottom: 0; 
+    background: rgba(0, 0, 0, 0.5); 
+    display: none; 
+    align-items: center; 
+    justify-content: center; 
+    z-index: 1000; 
+}
+
+.modal-overlay.active { 
+    display: flex; 
+}
+
+.modal { 
+    background: white; 
+    border-radius: 0.5rem; 
+    padding: 2rem; 
+    max-width: 500px; 
+    width: 90%; 
+    max-height: 80vh; 
+    overflow-y: auto; 
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); 
+}
+
+.modal-title { 
+    font-size: 1.5rem; 
+    font-weight: bold; 
+    color: #1f2937; 
+    margin-bottom: 1rem; 
+}
+
+.formula-list { 
+    list-style: none; 
+    padding: 0; 
+    margin: 0; 
+}
+
+.formula-item { 
+    padding: 0.75rem; 
+    margin-bottom: 0.5rem; 
+    border: 1px solid #d1d5db; 
+    border-radius: 0.375rem; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+.formula-item:hover { 
+    background: #f3f4f6; 
+    border-color: #4f46e5; 
+}
+
+.formula-name { 
+    font-weight: 600; 
+    color: #1f2937; 
+    margin-bottom: 0.25rem; 
+}
+
+.formula-code { 
+    font-size: 0.875rem; 
+    color: #4f46e5; 
+    font-family: monospace; 
+}
+
+.formula-date { 
+    font-size: 0.75rem; 
+    color: #6b7280; 
+}
+
+.delete-btn { 
+    background: #ef4444; 
+    color: white; 
+    border: none; 
+    padding: 0.25rem 0.5rem; 
+    border-radius: 0.25rem; 
+    cursor: pointer; 
+    font-size: 0.75rem; 
+}
+
+.delete-btn:hover { 
+    background: #dc2626; 
+}
+
+.modal-actions { 
+    margin-top: 1rem; 
+    display: flex; 
+    justify-content: flex-end; 
+}
+
+.modal-close { 
+    background: #6b7280; 
+    color: white; 
+    border: none; 
+    padding: 0.5rem 1rem; 
+    border-radius: 0.375rem; 
+    cursor: pointer; 
+    font-weight: 600; 
+}
+
+.modal-close:hover { 
+    background: #4b5563; 
+}
+
+.wp-count-selector { 
+    display: inline-block; 
+    width: auto; 
+    min-width: 100px; 
+}
