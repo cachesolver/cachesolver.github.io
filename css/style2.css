@@ -135,4 +135,283 @@ footer a {
   color: var(--text-accent);
   text-decoration: none;
 }
+/* =========================
+   Layout helpers
+   ========================= */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+/* =========================
+   Card headers
+   ========================= */
+.card .header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  color: var(--text-accent);
+}
+
+.title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+/* =========================
+   Forms
+   ========================= */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-soft);
+  background: #f8fbfa;
+  color: var(--text-main);
+  font-family: var(--font-mono);
+}
+
+/* =========================
+   Buttons
+   ========================= */
+.btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.action-btn {
+  background: var(--bg-accent);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.action-btn:hover {
+  background: #cfe0da;
+}
+
+.browser-btn {
+  background: #e4efe9;
+}
+
+.clear-btn {
+  background: #fbe4e4;
+  border-color: #e2bcbc;
+}
+
+.clear-btn:hover {
+  background: #f4cccc;
+}
+
+/* =========================
+   Sections & grids
+   ========================= */
+.section-title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--text-accent);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+/* =========================
+   Tip box
+   ========================= */
+.tip-box {
+  background: #eef6f3;
+  border-left: 4px solid var(--text-accent);
+  padding: 1rem;
+  border-radius: var(--radius);
+  margin-top: 1.5rem;
+}
+
+.tip-text {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* =========================
+   Modal
+   ========================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  width: min(500px, 90%);
+  box-shadow: var(--shadow);
+}
+
+.modal-title {
+  margin-top: 0;
+}
+
+.formula-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.modal-actions {
+  text-align: right;
+}
+
+.modal-close {
+  background: var(--bg-accent);
+  border: 1px solid var(--border-soft);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+/* =========================
+   JS-generated: Parameters
+   ========================= */
+#paramInputs > div {
+  background: #f8fbfa;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+}
+
+#paramInputs label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+#paramInputs input {
+  margin-bottom: 0;
+  text-align: center;
+}
+
+/* =========================
+   JS-generated: Waypoints
+   ========================= */
+#waypointsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+#waypointsContainer > div {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+/* Waypoint headings */
+#waypointsContainer h3,
+#waypointsContainer h4 {
+  margin-top: 0;
+  color: var(--text-accent);
+}
+
+/* =========================
+   Coordinate & Formula Rows
+   ========================= */
+#waypointsContainer .form-group {
+  margin-bottom: 0.75rem;
+}
+
+#waypointsContainer input,
+#waypointsContainer select {
+  font-family: var(--font-mono);
+}
+
+/* Coordinate blocks (lat/lon) */
+.coord-row,
+.coordinate-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* =========================
+   Calculated Outputs
+   ========================= */
+.output,
+.result,
+.calculated {
+  background: #f8fbfa;
+  border: 1px dashed var(--border-soft);
+  padding: 0.75rem;
+  font-family: var(--font-mono);
+  border-radius: var(--radius);
+}
+
+/* =========================
+   Formula list (modal)
+   ========================= */
+.formula-list li {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.formula-list li:hover {
+  background: #e6f1ed;
+}
+
+/* =========================
+   Checkboxes (JS-created)
+   ========================= */
+input[type="checkbox"] {
+  accent-color: var(--text-accent);
+}
+
+/* =========================
+   Defensive defaults
+   ========================= */
+#root input,
+#root select,
+#root textarea {
+  max-width: 100%;
+}
 
