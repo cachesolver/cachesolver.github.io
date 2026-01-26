@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Cache Waypoint Solver - Documentation</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Documentation-specific styles */
+        .doc-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            padding: 3rem;
+        }
+        .doc-title {
+            font-size: 2.5rem;
+            color: #4f46e5;
+            margin-bottom: 1rem;
+            border-bottom: 3px solid #4f46e5;
+            padding-bottom: 0.5rem;
+        }
+        .doc-section-title {
+            font-size: 1.75rem;
+            color: #4f46e5;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+        .doc-subsection-title {
+            font-size: 1.25rem;
+            color: #1f2937;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .intro {
+            font-size: 1.125rem;
+            color: #4b5563;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #f3f4f6;
+            border-left: 4px solid #4f46e5;
+            border-radius: 0.25rem;
+        }
+        ul, ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        li {
+            margin-bottom: 0.5rem;
+        }
+        code {
+            background: #f3f4f6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #ef4444;
+        }
+        .code-block {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        .feature-box {
+            background: #eef2ff;
+            border: 2px solid #c7d2fe;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .feature-box h4 {
+            color: #4f46e5;
+            margin-bottom: 0.5rem;
+        }
+        .warning {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.25rem;
+        }
+        .tip {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.25rem;
+        }
+        .info {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.25rem;
+        }
+        .example {
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .example-title {
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 0.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        th, td {
+            border: 1px solid #d1d5db;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        th {
+            background: #f3f4f6;
+            font-weight: 600;
+        }
+        .toc {
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        .toc h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+        }
+        .toc ul {
+            margin-left: 1.5rem;
+        }
+        .toc a {
+            color: #4f46e5;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <iframe src="includes/header.html" id="header-frame" frameborder="0" scrolling="no" onload="resizeIframe(this)"></iframe>
+
+    <div class="doc-container">
+        <h1 class="doc-title">Cache  Solver - About</h1>
+        
+
+        <p>
+        
+        We always struggled with pieces of paper while caching, or little notes on our phone.
+        Or even sending the codes we found as a message to the other cachers that were joining us on our hunt.
+        And then by the time we had all the details, the calculations started, and we made errors and we logged DNF's because 
+        of it. 
+</p>
+<p>
+        Then we started using Google Sheets with pre filled formulas , so while walking 
+        it was just a matter of filling in the sheet and the result came out  . It was better
+        But writing formulas in Sheets style was still painfull. And difficult to share with others.
+
+        </p> <p>
+        Now what if we could just build an app that did all of this for us.
+        So the idea for Cache Solver was born 
+
+        </p> <p>
+
+        Fill in the Parameters, Fill in the forumula , share with your friends and go outside.
+        A static one page open source application
+
+        </p> <p>
+        You can save and import formula for  the caches  you are searching, on your phone, 
+        on your laptop  and share them with your friends or other devices.
+
+        </p> <p>
+        <a name="#privacy">
+        We don't store anything, we don't know who you are or where you are caching, unless you mail  your formulas to us.
+
+        </p>
+
+        <h2>Support and Feedback</h2>
+        <p>
+        Send email to <a href="mailto:info@ cachesolver dot eu">info at cachesolver dot eu</a>
+        </p>
+
+    </div>
+
+    <iframe src="includes/footer.html" id="footer-frame" frameborder="0" scrolling="no" onload="resizeIframe(this)"></iframe>
+
+
+</body>
+
+</html>

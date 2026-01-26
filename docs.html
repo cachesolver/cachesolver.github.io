@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Cache Waypoint Solver - Documentation</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Documentation-specific styles */
+        .doc-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            padding: 3rem;
+        }
+        .doc-title {
+            font-size: 2.5rem;
+            color: #4f46e5;
+            margin-bottom: 1rem;
+            border-bottom: 3px solid #4f46e5;
+            padding-bottom: 0.5rem;
+        }
+        .doc-section-title {
+            font-size: 1.75rem;
+            color: #4f46e5;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+        .doc-subsection-title {
+            font-size: 1.25rem;
+            color: #1f2937;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .intro {
+            font-size: 1.125rem;
+            color: #4b5563;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #f3f4f6;
+            border-left: 4px solid #4f46e5;
+            border-radius: 0.25rem;
+        }
+        ul, ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        li {
+            margin-bottom: 0.5rem;
+        }
+        code {
+            background: #f3f4f6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #ef4444;
+        }
+        .code-block {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        .feature-box {
+            background: #eef2ff;
+            border: 2px solid #c7d2fe;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .feature-box h4 {
+            color: #4f46e5;
+            margin-bottom: 0.5rem;
+        }
+        .warning {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.25rem;
+        }
+        .tip {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.25rem;
+        }
+        .info {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.25rem;
+        }
+        .example {
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .example-title {
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 0.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        th, td {
+            border: 1px solid #d1d5db;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        th {
+            background: #f3f4f6;
+            font-weight: 600;
+        }
+        .toc {
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        .toc h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+        }
+        .toc ul {
+            margin-left: 1.5rem;
+        }
+        .toc a {
+            color: #4f46e5;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <iframe src="includes/header.html" id="header-frame" frameborder="0" scrolling="no" onload="resizeIframe(this)"></iframe>
+
+    <div class="doc-container">
+        <h1 class="doc-title">Multi-Cache Waypoint Solver - Documentation</h1>
+        
+        <p class="intro">
+            A web-based tool for solving multi-cache geocache coordinates using formulas. Perfect for multi-caches that require you to calculate waypoint coordinates based on information discovered at each stage.
+        </p>
+
+        <div class="toc">
+            <h2>Table of Contents</h2>
+            <ul>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#getting-started">Getting Started</a></li>
+                <li><a href="#basic-usage">Basic Usage</a></li>
+                <li><a href="#formulas">Working with Formulas</a></li>
+                <li><a href="#saving-loading">Saving and Loading</a></li>
+                <li><a href="#browser-storage">Browser Storage (In-Depth)</a></li>
+                <li><a href="#sharing">Sharing Formulas</a></li>
+                <li><a href="#examples">Examples</a></li>
+                <li><a href="#tips">Tips and Tricks</a></li>
+            </ul>
+        </div>
+
+        <h2 class="doc-section-title" id="overview">Overview</h2>
+        <p>
+            The Multi-Cache Waypoint Solver helps geocachers solve multi-cache coordinates by allowing them to:
+        </p>
+        <ul>
+            <li>Define parameters (A-Z) with numeric values from puzzle solutions</li>
+            <li>Create formulas using these parameters to calculate coordinates</li>
+            <li>Manage multiple waypoints in a single cache</li>
+            <li>Add notes/comments to parameters for reference</li>
+            <li>Save formulas locally in their browser</li>
+            <li>Export and share formulas as JSON files</li>
+            <li>Load formulas from URLs for easy sharing</li>
+        </ul>
+
+        <h2 class="doc-section-title" id="getting-started">Getting Started</h2>
+        
+        <h3 class="doc-subsection-title">Cache Information</h3>
+        <div class="feature-box">
+            <h4>Geocache Code</h4>
+            <p>Enter the GC code (e.g., <code>GC40</code>). This will be used as the filename when saving. Required for browser storage.</p>
+        </div>
+        
+        <div class="feature-box">
+            <h4>Geocache Name (Optional)</h4>
+            <p>Enter a descriptive name (e.g., "Mystery in the Forest"). This helps identify caches in your saved list.</p>
+        </div>
+
+        <h3 class="doc-subsection-title">Step 1: Define Parameters</h3>
+        <p>
+            Choose how you want to define your parameters:
+        </p>
+        
+        <div class="feature-box">
+            <h4>Range Method (A-B, A-C, etc.)</h4>
+            <p>Select from the dropdown to create sequential parameters. For example:</p>
+            <ul>
+                <li><code>A-B</code> = 2 parameters (A and B)</li>
+                <li><code>A-E</code> = 5 parameters (A, B, C, D, E)</li>
+                <li><code>A-Z</code> = 26 parameters (all letters)</li>
+            </ul>
+        </div>
+        
+        <div class="feature-box">
+            <h4>Custom List Method</h4>
+            <p>Enter any comma-separated letters to create custom parameter sets:</p>
+            <ul>
+                <li><code>A,B,C,K,L,M,X,Y,Z</code> - Skip letters as needed</li>
+                <li><code>P,Q,R,S,T</code> - Use only specific letters</li>
+                <li><code>A,C,E,G</code> - Use non-sequential parameters</li>
+            </ul>
+        </div>
+
+        <h3 class="doc-subsection-title">Step 2: Number of Waypoints</h3>
+        <p>
+            Enter the total number of waypoints in the multi-cache (1-50). Each waypoint gets its own coordinate formula card.
+        </p>
+
+        <h2 class="doc-section-title" id="basic-usage">Basic Usage</h2>
+
+        <h3 class="doc-subsection-title">Parameter Input</h3>
+        <p>Each parameter has two input fields:</p>
+        <ul>
+            <li><strong>Value field</strong>: Enter the numeric value you discovered</li>
+            <li><strong>Note field</strong>: Add optional notes (e.g., "Trees at WP1", "Year on plaque")</li>
+        </ul>
+
+        <h3 class="doc-subsection-title">Understanding Coordinate Format</h3>
+        <p>The tool uses the standard geocaching coordinate format:</p>
+        <div class="code-block">N DD° MM.MMM E DDD° MM.MMM</div>
+        <p>For example: <code>N 50° 00.000 E 005° 00.000</code></p>
+
+        <h3 class="doc-subsection-title">Direction Toggles</h3>
+        <ul>
+            <li>Click the <strong>N</strong> button to toggle between North (N) and South (S)</li>
+            <li>Click the <strong>E</strong> button to toggle between East (E) and West (W)</li>
+        </ul>
+
+        <h2 class="doc-section-title" id="formulas">Working with Formulas</h2>
+
+        <h3 class="doc-subsection-title">Entering Formulas</h3>
+        <p>Each coordinate digit field accepts either:</p>
+        <ol>
+            <li><strong>A direct number</strong>: Just type <code>5</code> or <code>7</code></li>
+            <li><strong>A formula using parameters</strong>: Use the parameter names from Step 1</li>
+        </ol>
+
+        <h3 class="doc-subsection-title">Formula Syntax</h3>
+        <p>You can use standard mathematical operations:</p>
+        <table>
+            <tr>
+                <th>Operation</th>
+                <th>Symbol</th>
+                <th>Example</th>
+            </tr>
+            <tr>
+                <td>Addition</td>
+                <td><code>+</code></td>
+                <td><code>A+B</code></td>
+            </tr>
+            <tr>
+                <td>Subtraction</td>
+                <td><code>-</code></td>
+                <td><code>A-B</code></td>
+            </tr>
+            <tr>
+                <td>Multiplication</td>
+                <td><code>*</code></td>
+                <td><code>A*2</code></td>
+            </tr>
+            <tr>
+                <td>Division</td>
+                <td><code>/</code></td>
+                <td><code>B/2</code></td>
+            </tr>
+            <tr>
+                <td>Parentheses</td>
+                <td><code>( )</code></td>
+                <td><code>(A+B)*2</code></td>
+            </tr>
+        </table>
+
+        <div class="tip">
+            <strong>💡 Tip:</strong> The result of each formula is automatically rounded down (floor function) to get a single digit for coordinates.
+        </div>
+
+        <h2 class="doc-section-title" id="saving-loading">Saving and Loading</h2>
+
+        <h3 class="doc-subsection-title">Save Options</h3>
+
+        <div class="feature-box">
+            <h4>Save to File</h4>
+            <p>Downloads a JSON file to your computer. The filename will be based on the Geocache Code you entered (e.g., <code>GC40.json</code>).</p>
+            <p><strong>Advantages:</strong></p>
+            <ul>
+                <li>Works across all devices and browsers</li>
+                <li>Can be backed up to cloud storage</li>
+                <li>Easy to share with others</li>
+                <li>Not affected by browser settings or cache clearing</li>
+            </ul>
+        </div>
+
+        <div class="feature-box">
+            <h4>Save to Browser</h4>
+            <p>Stores the formula in your browser's local storage for quick access.</p>
+            <p><strong>Advantages:</strong></p>
+            <ul>
+                <li>No file management needed</li>
+                <li>Quick access from the same browser/device</li>
+                <li>Good for active/in-progress caches</li>
+            </ul>
+            <p><strong>See the <a href="#browser-storage">Browser Storage section</a> below for detailed information and constraints.</strong></p>
+        </div>
+
+        <h3 class="doc-subsection-title">Parameter Values Checkbox</h3>
+        <p>
+            When saving, you can choose whether to include the parameter values (A, B, C, etc.):
+        </p>
+        <ul>
+            <li><strong>Checked</strong>: Saves both the formulas AND the values you entered (useful for your own records)</li>
+            <li><strong>Unchecked</strong>: Saves only the formula structure (useful for sharing puzzles without spoiling solutions)</li>
+        </ul>
+        <p><strong>Note:</strong> Comments are always saved regardless of this checkbox setting.</p>
+
+        <h3 class="doc-subsection-title">Load Options</h3>
+
+        <div class="feature-box">
+            <h4>Load from File</h4>
+            <p>Browse your computer to select a previously saved JSON file.</p>
+        </div>
+
+        <div class="feature-box">
+            <h4>Load from Browser</h4>
+            <p>Opens a modal showing all formulas saved in browser storage. Click any formula to load it, or click the Delete button to remove it.</p>
+        </div>
+
+        <div class="feature-box">
+            <h4>Load from URL</h4>
+            <p>Enter a direct URL to a JSON file hosted online. The formula will be fetched and loaded automatically.</p>
+        </div>
+
+        <h2 class="doc-section-title" id="browser-storage">Browser Storage (In-Depth)</h2>
+
+        <h3 class="doc-subsection-title">How Browser Storage Works</h3>
+        
+        <div class="info">
+            <p><strong>Technical Details:</strong> The tool uses the browser's <code>localStorage</code> API to store formula data directly on your device. This is a key-value storage system built into modern web browsers.</p>
+        </div>
+
+        <h3 class="doc-subsection-title">What Gets Stored</h3>
+        <p>When you click "Save to Browser", the following data is stored:</p>
+        <ul>
+            <li>Geocache code and name</li>
+            <li>Parameter configuration (range or custom list)</li>
+            <li>Parameter values (if checkbox is checked)</li>
+            <li>Parameter comments/notes (always saved)</li>
+            <li>Number of waypoints</li>
+            <li>All waypoint formulas and direction settings</li>
+            <li>Timestamp of when it was saved</li>
+        </ul>
+
+        <h3 class="doc-subsection-title">Storage Keys</h3>
+        <p>Each formula is stored with two localStorage keys:</p>
+        <ul>
+            <li><code>gc_multi_[CacheCode]</code> - Contains the full formula data</li>
+            <li><code>gc_multi_list</code> - Contains a list of all saved cache codes</li>
+        </ul>
+
+        <div class="example">
+            <div class="example-title">Example:</div>
+            <p>If you save cache code <code>GC40</code>, it creates:</p>
+            <ul>
+                <li><code>gc_multi_GC40</code> - The formula data</li>
+                <li><code>gc_multi_list</code> - Updated to include "GC40"</li>
+            </ul>
+        </div>
+
+        <h3 class="doc-subsection-title">Constraints and Limitations</h3>
+
+        <div class="warning">
+            <h4>⚠️ Device and Browser Specific</h4>
+            <p><strong>Browser storage is NOT synced across devices or browsers.</strong></p>
+            <ul>
+                <li>Data saved in Chrome won't appear in Firefox</li>
+                <li>Data on your laptop won't sync to your phone</li>
+                <li>Data in regular browsing won't appear in private/incognito mode</li>
+                <li>Each browser profile has separate storage</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <h4>⚠️ Storage Capacity</h4>
+            <p><strong>Typical browser limits:</strong></p>
+            <ul>
+                <li>Chrome/Edge: ~10MB per domain</li>
+                <li>Firefox: ~10MB per domain</li>
+                <li>Safari: ~5MB per domain</li>
+            </ul>
+            <p>This is enough for hundreds of formulas, but very large multi-caches with many waypoints will use more space.</p>
+        </div>
+
+        <div class="warning">
+            <h4>⚠️ Data Persistence</h4>
+            <p><strong>Your data can be lost if:</strong></p>
+            <ul>
+                <li>You clear browser data/cache</li>
+                <li>You clear site data specifically</li>
+                <li>The browser runs out of storage space</li>
+                <li>You uninstall and reinstall the browser</li>
+                <li>Your device storage is full (browser may auto-clear)</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <h4>⚠️ Privacy Modes</h4>
+            <p>In private/incognito browsing:</p>
+            <ul>
+                <li>localStorage works during the session</li>
+                <li>All data is deleted when you close the private window</li>
+                <li>Data from normal browsing is not accessible</li>
+            </ul>
+        </div>
+
+        <h3 class="doc-subsection-title">Best Practices</h3>
+
+        <div class="tip">
+            <h4>💡 Recommended Workflow</h4>
+            <ol>
+                <li><strong>Active Caching</strong>: Use "Save to Browser" while actively working on a cache</li>
+                <li><strong>Completed/Important Caches</strong>: Use "Save to File" to create a permanent backup</li>
+                <li><strong>Before Browser Maintenance</strong>: Export all formulas to files before clearing browser data</li>
+                <li><strong>Cross-Device Work</strong>: Use file export/import or URL sharing</li>
+            </ol>
+        </div>
+
+        <div class="tip">
+            <h4>💡 Backup Strategy</h4>
+            <ul>
+                <li>Periodically export important formulas to files</li>
+                <li>Store backup files in cloud storage (Dropbox, Google Drive, etc.)</li>
+                <li>Consider browser storage as temporary/convenience storage only</li>
+            </ul>
+        </div>
+
+        <h3 class="doc-subsection-title">Viewing Your Stored Data</h3>
+        <p>You can inspect your browser's localStorage using browser developer tools:</p>
+        <ol>
+            <li>Press F12 to open Developer Tools</li>
+            <li>Go to the "Application" or "Storage" tab</li>
+            <li>Expand "Local Storage" in the sidebar</li>
+            <li>Look for keys starting with <code>gc_multi_</code></li>
+        </ol>
+
+        <h3 class="doc-subsection-title">Manually Clearing Browser Storage</h3>
+        <p>To remove all saved formulas from browser storage:</p>
+        <ol>
+            <li>Use the "Delete" button next to each formula in the "Load from Browser" modal, OR</li>
+            <li>Clear site data via browser settings, OR</li>
+            <li>Use browser Developer Tools to delete localStorage keys</li>
+        </ol>
+
+        <h2 class="doc-section-title" id="sharing">Sharing Formulas</h2>
+
+        <h3 class="doc-subsection-title">Method 1: Direct File Sharing</h3>
+        <ol>
+            <li>Save your formula using "Save to File"</li>
+            <li>Share the JSON file via email, messaging, or file sharing service</li>
+            <li>Recipients use "Load from File" to import it</li>
+        </ol>
+
+        <h3 class="doc-subsection-title">Method 2: URL Sharing</h3>
+        <ol>
+            <li>Save your formula to a file</li>
+            <li>Upload to a public location:
+                <ul>
+                    <li>GitHub Gist (use the "Raw" URL)</li>
+                    <li>Pastebin (use raw format)</li>
+                    <li>Your own web server</li>
+                    <li>Public cloud storage with direct links</li>
+                </ul>
+            </li>
+            <li>Share the URL with others</li>
+            <li>Recipients paste the URL into "Load from URL" field</li>
+        </ol>
+
+        <h3 class="doc-subsection-title">Method 3: Direct URL Parameter</h3>
+        <p>You can create a link that automatically loads a formula when opened:</p>
+        <div class="code-block">index.html?load=https://example.com/GC40.json</div>
+        <p>When someone clicks this link, the formula loads automatically!</p>
+
+        <h2 class="doc-section-title" id="examples">Examples</h2>
+
+        <div class="example">
+            <div class="example-title">Example 1: Simple Multi-Cache (3 Waypoints)</div>
+            <p><strong>Setup:</strong></p>
+            <ul>
+                <li>Parameters: A-E (5 parameters)</li>
+                <li>Waypoints: 3</li>
+            </ul>
+            <p><strong>Waypoint 1:</strong> N 50° 0A.B00 E 005° 0C.D00</p>
+            <p><strong>Waypoint 2:</strong> N 50° 0(A+1).E00 E 005° 0C.D50</p>
+            <p><strong>Final:</strong> N 50° 0E.(A*100) E 005° 0D.(B+C)</p>
+            <p><strong>As you progress:</strong> Fill in A at WP1, B at WP2, etc. Each coordinate updates automatically.</p>
+        </div>
+
+        <div class="example">
+            <div class="example-title">Example 2: Custom Parameters</div>
+            <p><strong>Cache uses:</strong> X, Y, Z parameters only</p>
+            <p><strong>Setup:</strong> Use Custom List method: <code>X,Y,Z</code></p>
+            <p>This creates only the three parameter inputs you need.</p>
+        </div>
+
+        <h2 class="doc-section-title" id="tips">Tips and Tricks</h2>
+
+        <div class="tip">
+            <h4>💡 Use Descriptive Names</h4>
+            <p>Fill in both the code AND the name fields. The name helps you remember which mystery this is when browsing your saved formulas.</p>
+        </div>
+
+        <div class="tip">
+            <h4>💡 Add Notes to Parameters</h4>
+            <p>Use the comment field under each parameter to note where the value came from (e.g., "Trees at WP1", "Year on memorial plaque").</p>
+        </div>
+
+        <div class="tip">
+            <h4>💡 Test Your Formulas</h4>
+            <p>Before heading out, verify your formulas produce reasonable coordinates (within expected geographic range).</p>
+        </div>
+
+        <div class="tip">
+            <h4>💡 Progressive Solving</h4>
+            <p>You don't need all parameters at once! Enter formulas for all waypoints, then fill in parameter values as you discover them during the cache hunt.</p>
+        </div>
+
+        <div class="tip">
+            <h4>💡 Keep Backups</h4>
+            <p>Use "Save to File" to create backup copies of your formulas, especially for complex multi-caches. Browser storage is convenient but not permanent.</p>
+        </div>
+
+        <div class="tip">
+            <h4>💡 Share Responsibly</h4>
+            <p>When sharing formulas for unsolved mysteries, uncheck "Save parameter values" to share the puzzle structure without spoiling the solution.</p>
+        </div>
+
+        <div class="warning">
+            <h4>⚠️ Formula Errors</h4>
+            <p>If a formula can't be evaluated (syntax error or missing parameters), it will show as <code>?</code> in the result. Double-check your formula syntax and ensure all parameters are defined.</p>
+        </div>
+
+        <h2 class="doc-section-title">Additional Features</h2>
+
+        <h3 class="doc-subsection-title">Clear All</h3>
+        <p>
+            The red "Clear All" button resets the entire form to its default state. This includes:
+        </p>
+        <ul>
+            <li>Cache code and name</li>
+            <li>All parameter values and comments</li>
+            <li>All waypoint formulas</li>
+            <li>Direction toggles (reset to N and E)</li>
+        </ul>
+        <p>A confirmation dialog appears to prevent accidental data loss.</p>
+
+        <h2 class="doc-section-title">Privacy and Data Storage</h2>
+        <p>
+            All data is stored locally in your browser or in files you control:
+        </p>
+        <ul>
+            <li>No data is sent to external servers (except when using the CORS proxy for URL loading)</li>
+            <li>Browser storage uses localStorage (stays on your device)</li>
+            <li>Files are saved to your local computer</li>
+            <li>The CORS proxy is only used for fetching public URLs you specify</li>
+        </ul>
+
+        <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e5e7eb;">
+        
+        <p style="text-align: center; color: #6b7280; font-size: 0.875rem;">
+            Multi-Cache Waypoint Solver - A tool for geocachers by geocachers
+        </p>
+    </div>
+
+    <iframe src="includes/footer.html" id="footer-frame" frameborder="0" scrolling="no" onload="resizeIframe(this)"></iframe>
+
+    <script>
+        function resizeIframe(iframe) {
+            iframe.style.height = iframe.contentWindow.document.body.scrollHeight + 'px';
+        }
+    </script>
+</body>
+</html>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+            background: linear-gradient(to bottom right, #eff6ff, #e0e7ff);
+            padding: 2rem;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            padding: 3rem;
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: #4f46e5;
+            margin-bottom: 1rem;
+            border-bottom: 3px solid #4f46e5;
+            padding-bottom: 0.5rem;
+        }
+        h2 {
+            font-size: 1.75rem;
+            color: #4f46e5;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+        h3 {
+            font-size: 1.25rem;
+            color: #1f2937;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        p {
+            margin-bottom: 1rem;
+        }
+        .intro {
+            font-size: 1.125rem;
+            color: #4b5563;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #f3f4f6;
+            border-left: 4px solid #4f46e5;
+            border-radius: 0.25rem;
+        }
+        ul, ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        li {
+            margin-bottom: 0.5rem;
+        }
+        code {
+            background: #f3f4f6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #ef4444;
+        }
+        .code-block {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        .feature-box {
+            background: #eef2ff;
+            border: 2px solid #c7d2fe;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .feature-box h4 {
+            color: #4f46e5;
+            margin-bottom: 0.5rem;
+        }
+        .warning {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.25rem;
+        }
+        .tip {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.25rem;
+        }
+        .example {
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .example-title {
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 0.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        th, td {
+            border: 1px solid #d1d5db;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        th {
+            background: #f3f4f6;
+            font-weight: 600;
+        }
+        .toc {
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        .toc h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+        }
+        .toc ul {
+            margin-left: 1.5rem;
+        }
+        .toc a {
+            color: #4f46e5;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mystery Formula Solver</h1>
+        
+        <p class="intro">
+            A web-based tool for solving geocaching mystery cache coordinates using formulas. Perfect for mystery caches that require you to calculate final coordinates based on puzzle solutions.
+        </p>
+
+        <div class="toc">
+            <h2>Table of Contents</h2>
+            <ul>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#getting-started">Getting Started</a></li>
+                <li><a href="#basic-usage">Basic Usage</a></li>
+                <li><a href="#formulas">Working with Formulas</a></li>
+                <li><a href="#saving-loading">Saving and Loading</a></li>
+                <li><a href="#sharing">Sharing Formulas</a></li>
+                <li><a href="#examples">Examples</a></li>
+                <li><a href="#tips">Tips and Tricks</a></li>
+            </ul>
+        </div>
+
+        <h2 id="overview">Overview</h2>
+        <p>
+            The Mystery Formula Solver helps geocachers solve mystery caches by allowing them to:
+        </p>
+        <ul>
+            <li>Define parameters (A-Z) with numeric values from puzzle solutions</li>
+            <li>Create formulas using these parameters to calculate coordinates</li>
+            <li>Save formulas locally in their browser</li>
+            <li>Export and share formulas as JSON files</li>
+            <li>Load formulas from URLs for easy sharing</li>
+        </ul>
+
+        <h2 id="getting-started">Getting Started</h2>
+        
+        <h3>Step 1: Enter Cache Information</h3>
+        <div class="feature-box">
+            <h4>Geocache Code</h4>
+            <p>Enter the GC code (e.g., <code>GC6KPVG</code>). This will be used as the filename when saving.</p>
+        </div>
+        
+        <div class="feature-box">
+            <h4>Geocache Name (Optional)</h4>
+            <p>Enter a descriptive name (e.g., "Mystery in the Forest"). This helps identify caches in your saved list.</p>
+        </div>
+
+        <h3>Step 2: Define Parameters</h3>
+        <p>
+            Select the parameter range based on how many variables your puzzle uses. For example:
+        </p>
+        <ul>
+            <li><code>A-B</code> = 2 parameters (A and B)</li>
+            <li><code>A-E</code> = 5 parameters (A, B, C, D, E)</li>
+            <li><code>A-Z</code> = 26 parameters (all letters)</li>
+        </ul>
+        
+        <p>After selecting the range, input fields will appear for each parameter where you can enter the numeric values you solved from the puzzle.</p>
+
+        <h2 id="basic-usage">Basic Usage</h2>
+
+        <h3>Understanding Coordinate Format</h3>
+        <p>The tool uses the standard geocaching coordinate format:</p>
+        <div class="code-block">N DD° MM.MMM E DDD° MM.MMM</div>
+        <p>For example: <code>N 51° 07.358 E 004° 26.906</code></p>
+
+        <h3>Direction Toggles</h3>
+        <ul>
+            <li>Click the <strong>N</strong> button to toggle between North (N) and South (S)</li>
+            <li>Click the <strong>E</strong> button to toggle between East (E) and West (W)</li>
+        </ul>
+
+        <h2 id="formulas">Working with Formulas</h2>
+
+        <h3>Entering Formulas</h3>
+        <p>Each coordinate digit field accepts either:</p>
+        <ol>
+            <li><strong>A direct number</strong>: Just type <code>5</code> or <code>7</code></li>
+            <li><strong>A formula using parameters</strong>: Use the parameter names from Step 1</li>
+        </ol>
+
+        <h3>Formula Syntax</h3>
+        <p>You can use standard mathematical operations:</p>
+        <table>
+            <tr>
+                <th>Operation</th>
+                <th>Symbol</th>
+                <th>Example</th>
+            </tr>
+            <tr>
+                <td>Addition</td>
+                <td><code>+</code></td>
+                <td><code>A+B</code></td>
+            </tr>
+            <tr>
+                <td>Subtraction</td>
+                <td><code>-</code></td>
+                <td><code>A-B</code></td>
+            </tr>
+            <tr>
+                <td>Multiplication</td>
+                <td><code>*</code></td>
+                <td><code>A*2</code></td>
+            </tr>
+            <tr>
+                <td>Division</td>
+                <td><code>/</code></td>
+                <td><code>B/2</code></td>
+            </tr>
+            <tr>
+                <td>Parentheses</td>
+                <td><code>( )</code></td>
+                <td><code>(A+B)*2</code></td>
+            </tr>
+        </table>
+
+        <div class="tip">
+            <strong>💡 Tip:</strong> The result of each formula is automatically rounded down (floor function) to get a single digit for coordinates.
+        </div>
+
+        <h2 id="saving-loading">Saving and Loading</h2>
+
+        <h3>Save Options</h3>
+
+        <div class="feature-box">
+            <h4>Save to File</h4>
+            <p>Downloads a JSON file to your computer. The filename will be based on the Geocache Code you entered (e.g., <code>GC6KPVG.json</code>).</p>
+        </div>
+
+        <div class="feature-box">
+            <h4>Save to Browser</h4>
+            <p>Stores the formula in your browser's local storage. This data persists even after closing the browser, but stays on the current device only.</p>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Note:</strong> Browser storage is device-specific and browser-specific. Data saved in Chrome won't appear in Firefox, and data on your computer won't sync to your phone.
+        </div>
+
+        <h3>Parameter Values Checkbox</h3>
+        <p>
+            When saving, you can choose whether to include the parameter values (A, B, C, etc.):
+        </p>
+        <ul>
+            <li><strong>Checked</strong>: Saves both the formulas AND the values you entered</li>
+            <li><strong>Unchecked</strong>: Saves only the formula structure (useful for sharing puzzles without spoiling solutions)</li>
+        </ul>
+
+        <h3>Load Options</h3>
+
+        <div class="feature-box">
+            <h4>Load from File</h4>
+            <p>Browse your computer to select a previously saved JSON file.</p>
+        </div>
+
+        <div class="feature-box">
+            <h4>Load from Browser</h4>
+            <p>Opens a modal showing all formulas saved in browser storage. Click any formula to load it, or click the Delete button to remove it.</p>
+        </div>
+
+        <div class="feature-box">
+            <h4>Load from URL</h4>
+            <p>Enter a direct URL to a JSON file hosted online. The formula will be fetched and loaded automatically.</p>
+        </div>
+
+        <h2 id="sharing">Sharing Formulas</h2>
+
+        <h3>Method 1: Direct File Sharing</h3>
+        <ol>
+            <li>Save your formula using "Save to File"</li>
+            <li>Share the JSON file via email, messaging, or file sharing service</li>
+            <li>Recipients use "Load from File" to import it</li>
+        </ol>
+
+        <h3>Method 2: URL Sharing</h3>
+        <ol>
+            <li>Save your formula to a file</li>
+            <li>Upload to a public location:
+                <ul>
+                    <li>GitHub Gist (use the "Raw" URL)</li>
+                    <li>Pastebin (use raw format)</li>
+                    <li>Your own web server</li>
+                    <li>Public cloud storage with direct links</li>
+                </ul>
+            </li>
+            <li>Share the URL with others</li>
+            <li>Recipients paste the URL into "Load from URL" field</li>
+        </ol>
+
+        <h3>Method 3: Direct URL Parameter</h3>
+        <p>You can create a link that automatically loads a formula when opened:</p>
+        <div class="code-block">mystery-solver.html?load=https://example.com/formula.json</div>
+        <p>When someone clicks this link, the formula loads automatically!</p>
+
+        <h2 id="examples">Examples</h2>
+
+        <div class="example">
+            <div class="example-title">Example 1: Simple Cache</div>
+            <p><strong>Puzzle:</strong> Find A (answer: 5) and B (answer: 1)</p>
+            <p><strong>Final coordinate:</strong> N 51° 0A.B58 E 004° 26.906</p>
+            <p><strong>Setup:</strong></p>
+            <ol>
+                <li>Parameter Range: A-B</li>
+                <li>A = 5, B = 1</li>
+                <li>North row: <code>5</code> <code>1</code> <code>0</code> <code>A</code> <code>.</code> <code>B</code> <code>5</code> <code>8</code></li>
+                <li>East row: <code>0</code> <code>0</code> <code>4</code> <code>2</code> <code>6</code> <code>.</code> <code>9</code> <code>0</code> <code>6</code></li>
+            </ol>
+            <p><strong>Result:</strong> N 51° 05.158 E 004° 26.906</p>
+        </div>
+
+        <div class="example">
+            <div class="example-title">Example 2: Formula-Based Cache</div>
+            <p><strong>Puzzle:</strong> A=3, B=7, C=2</p>
+            <p><strong>Final coordinate:</strong> N 5(A+B-C)° 0(B-A).C58 E 004° 26.906</p>
+            <p><strong>Setup:</strong></p>
+            <ol>
+                <li>Parameter Range: A-C</li>
+                <li>A = 3, B = 7, C = 2</li>
+                <li>Formula for degree: <code>A+B-C</code> (evaluates to 8)</li>
+                <li>Formula for minute: <code>B-A</code> (evaluates to 4)</li>
+            </ol>
+            <p><strong>Result:</strong> N 58° 04.258 E 004° 26.906</p>
+        </div>
+
+        <div class="example">
+            <div class="example-title">Example 3: Complex Formula</div>
+            <p><strong>Formula:</strong> <code>(A+B)*C/2</code> where A=4, B=6, C=3</p>
+            <p><strong>Calculation:</strong> (4+6)*3/2 = 10*3/2 = 30/2 = 15 → rounds down to 1 (tens) and 5 (ones)</p>
+        </div>
+
+        <h2 id="tips">Tips and Tricks</h2>
+
+        <div class="tip">
+            <h4>💡 Use Descriptive Names</h4>
+            <p>Fill in both the code AND the name fields. The name helps you remember which mystery this is when browsing your saved formulas.</p>
+        </div>
+
+        <div class="tip">
+            <h4>💡 Test Your Formulas</h4>
+            <p>Before heading out to the cache, verify your formulas produce reasonable coordinates (within expected geographic range).</p>
+        </div>
+
+        <div class="tip">
+            <h4>💡 Keep Backups</h4>
+            <p>Use "Save to File" to create backup copies of your formulas. Browser storage can be cleared accidentally!</p>
+        </div>
+
+        <div class="tip">
+            <h4>💡 Share Responsibly</h4>
+            <p>When sharing formulas for unsolved mysteries, uncheck "Save parameter values" to share the puzzle structure without spoiling the solution.</p>
+        </div>
+
+        <div class="tip">
+            <h4>💡 Browser Compatibility</h4>
+            <p>This tool works in all modern browsers. For best results, use the latest version of Chrome, Firefox, Safari, or Edge.</p>
+        </div>
+
+        <div class="warning">
+            <h4>⚠️ Formula Errors</h4>
+            <p>If a formula can't be evaluated (syntax error or missing parameters), it will show as <code>?</code> in the result. Double-check your formula syntax and ensure all parameters are defined.</p>
+        </div>
+
+        <h2>Additional Features</h2>
+
+        <h3>Clear All</h3>
+        <p>
+            The red "Clear All" button resets the entire form to its default state. This includes:
+        </p>
+        <ul>
+            <li>Cache code and name</li>
+            <li>All parameter values</li>
+            <li>All formula inputs</li>
+            <li>Direction toggles (reset to N and E)</li>
+        </ul>
+        <p>A confirmation dialog appears to prevent accidental data loss.</p>
+
+        <h2>Privacy and Data Storage</h2>
+        <p>
+            All data is stored locally in your browser or in files you control:
+        </p>
+        <ul>
+            <li>No data is sent to external servers</li>
+            <li>Browser storage uses localStorage (stays on your device)</li>
+            <li>Files are saved to your local computer</li>
+            <li>URL loading uses a CORS proxy only for fetching public URLs</li>
+        </ul>
+
+        <h2>Support and Feedback</h2>
+        <p>
+            This tool is designed to make solving mystery caches easier and more organized. Happy caching!
+        </p>
+
+        <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e5e7eb;">
+        
+        <p style="text-align: center; color: #6b7280; font-size: 0.875rem;">
+            Mystery Formula Solver - A tool for geocachers by geocachers
+        </p>
+    </div>
+
+    <iframe src="includes/footer.html" id="footer-frame" frameborder="0" scrolling="no" onload="resizeIframe(this)"></iframe>
+
+
+</body>
+
+</html>
