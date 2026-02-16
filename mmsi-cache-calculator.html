@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MMSI Cache Calculator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap');
+
+  :root {
+    --navy:    #0d1b2a;
+    --steel:   #1e3a5f;
+    --rust:    #c0392b;
+    --amber:   #f0a500;
+    --yellow:  #ffe033;
+    --fog:     #b8c8d8;
+    --mist:    #dce8f0;
+    --white:   #f4f8fb;
+    --mono:    'Share Tech Mono', monospace;
+    --cond:    'Barlow Condensed', sans-serif;
+    --body:    'Barlow', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: var(--body);
+    min-height: 100vh;
+    padding: 24px 16px 40px;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.03) 39px, rgba(255,255,255,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.03) 39px, rgba(255,255,255,0.03) 40px);
+  }
+
+  /* ── HEADER ───────────────────────────────────────────── */
+  .page-header {
+    max-width: 900px;
+    margin: 0 auto 28px;
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    border-bottom: 3px solid var(--amber);
+    padding-bottom: 14px;
+  }
+  .header-icon {
+    font-size: 2.8rem;
+    line-height: 1;
+    filter: drop-shadow(0 0 8px var(--amber));
+  }
+  .header-text h1 {
+    font-family: var(--cond);
+    font-weight: 900;
+    font-size: 2.1rem;
+    letter-spacing: 0.05em;
+    color: var(--yellow);
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .header-text p {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--fog);
+    letter-spacing: 0.12em;
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+
+  /* ── MAIN CARD ────────────────────────────────────────── */
+  .card {
+    max-width: 900px;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  /* ── TOP INFO BAR ─────────────────────────────────────── */
+  .info-bar {
+    background: var(--steel);
+    border-bottom: 2px solid var(--amber);
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+  }
+  .info-field {
+    padding: 14px 18px;
+    border-right: 1px solid rgba(255,255,255,0.12);
+  }
+  .info-field:last-child { border-right: none; }
+  .info-label {
+    font-family: var(--cond);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 5px;
+  }
+  .info-input {
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 3px;
+    color: var(--yellow);
+    font-family: var(--mono);
+    font-size: 1.05rem;
+    letter-spacing: 0.06em;
+    padding: 6px 10px;
+    width: 100%;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .info-input:focus {
+    outline: none;
+    border-color: var(--amber);
+    box-shadow: 0 0 0 2px rgba(240,165,0,0.25);
+  }
+  .info-input::placeholder { color: rgba(255,255,255,0.2); }
+
+  /* MMSI digit strip */
+  .mmsi-row {
+    padding: 16px 18px;
+    background: rgba(0,0,0,0.2);
+    border-bottom: 2px solid var(--steel);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .mmsi-row-label {
+    font-family: var(--cond);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--amber);
+    white-space: nowrap;
+  }
+  .mmsi-digits {
+    display: flex;
+    gap: 4px;
+  }
+  .digit-box {
+    width: 34px;
+    height: 36px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+  }
+  .digit-pos {
+    font-family: var(--mono);
+    font-size: 0.52rem;
+    color: var(--fog);
+    opacity: 0.6;
+  }
+  .digit-val {
+    font-family: var(--mono);
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--yellow);
+    min-width: 1ch;
+    text-align: center;
+  }
+
+  /* ── SECTION HEADERS ──────────────────────────────────── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+    background: var(--steel);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .section-letters {
+    font-family: var(--cond);
+    font-size: 1.1rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    color: var(--yellow);
+  }
+  .section-coord {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--fog);
+    margin-left: auto;
+    letter-spacing: 0.06em;
+  }
+  .coord-input-inline {
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed rgba(255,255,255,0.3);
+    color: var(--yellow);
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    width: 80px;
+    text-align: center;
+    padding: 0 4px;
+  }
+  .coord-input-inline:focus { outline: none; border-bottom-color: var(--amber); }
+  .coord-narrow { width: 32px; }
+  .coord-var {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--yellow);
+    min-width: 1.1ch;
+    text-align: center;
+    transition: color 0.2s;
+  }
+  .coord-var.pending { color: var(--fog); opacity: 0.5; }
+
+  /* ── ROW TABLE ────────────────────────────────────────── */
+  .calc-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .calc-table thead th {
+    font-family: var(--cond);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--fog);
+    padding: 8px 10px;
+    text-align: center;
+    background: rgba(0,0,0,0.2);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .calc-table thead th.th-label { text-align: left; padding-left: 18px; }
+  .calc-table tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    transition: background 0.15s;
+  }
+  .calc-table tbody tr:hover { background: rgba(255,255,255,0.04); }
+  .calc-table tbody tr:last-child { border-bottom: none; }
+
+  .cell-label {
+    font-family: var(--cond);
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--yellow);
+    padding: 10px 10px 10px 18px;
+    width: 36px;
+  }
+  .cell-eq {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--fog);
+    padding: 0 4px;
+    text-align: center;
+    width: 20px;
+  }
+  .cell-pos {
+    padding: 8px 6px;
+    text-align: center;
+    width: 56px;
+  }
+  .pos-select {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 3px;
+    color: var(--yellow);
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    padding: 5px 4px;
+    width: 48px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .pos-select:focus { outline: none; border-color: var(--amber); }
+  .cell-looked {
+    padding: 8px 6px;
+    text-align: center;
+    width: 52px;
+  }
+  .looked-val {
+    font-family: var(--mono);
+    font-size: 1rem;
+    color: var(--mist);
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 3px;
+    padding: 5px 0;
+    min-width: 42px;
+    display: inline-block;
+    text-align: center;
+  }
+  .cell-op {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    color: var(--amber);
+    text-align: center;
+    padding: 0 4px;
+    width: 20px;
+  }
+  .cell-result {
+    padding: 8px 12px;
+    text-align: center;
+    width: 60px;
+  }
+  .result-val {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--yellow);
+    background: rgba(240,165,0,0.12);
+    border: 1px solid rgba(240,165,0,0.35);
+    border-radius: 3px;
+    padding: 5px 0;
+    min-width: 48px;
+    display: inline-block;
+    text-align: center;
+  }
+  .cell-letter-end {
+    font-family: var(--cond);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--fog);
+    padding: 0 12px 0 4px;
+    text-align: right;
+    width: 32px;
+  }
+
+  /* ── CHECKSUM BAR ─────────────────────────────────────── */
+  .checksum-bar {
+    background: var(--rust);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    padding: 14px 20px;
+    border-top: 2px solid rgba(255,255,255,0.15);
+  }
+  .checksum-label {
+    font-family: var(--cond);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #fff;
+  }
+  .checksum-formula {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.7);
+  }
+  .checksum-value {
+    font-family: var(--mono);
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: var(--yellow);
+    background: rgba(0,0,0,0.3);
+    border: 2px solid var(--yellow);
+    border-radius: 4px;
+    padding: 4px 16px;
+    min-width: 56px;
+    text-align: center;
+    filter: drop-shadow(0 0 6px rgba(255,224,51,0.4));
+  }
+
+  /* ── FOOTER ───────────────────────────────────────────── */
+  .page-footer {
+    max-width: 900px;
+    margin: 14px auto 0;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 0.1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* ── STORAGE TOOLBAR ──────────────────────────────────── */
+  .storage-bar {
+    max-width: 900px;
+    margin: 12px auto 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .save-status {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--fog);
+    opacity: 0.6;
+    transition: opacity 0.4s, color 0.4s;
+    white-space: nowrap;
+  }
+  .save-status.saved {
+    color: #4caf80;
+    opacity: 1;
+  }
+  .save-status.saving {
+    color: var(--amber);
+    opacity: 1;
+  }
+  .btn {
+    font-family: var(--cond);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 3px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-clear {
+    background: rgba(192,57,43,0.25);
+    border: 1px solid rgba(192,57,43,0.5);
+    color: #e88;
+  }
+  .btn-clear:hover { background: rgba(192,57,43,0.45); }
+
+  /* operator labels in table header */
+  .op-header { width: 20px; }
+
+  /* highlight invalid / empty pos */
+  .pos-select.unset { color: rgba(255,255,255,0.3); }
+
+  /* ── CACHE MANAGER DRAWER ─────────────────────────────── */
+  .manager-wrap {
+    max-width: 900px;
+    margin: 0 auto 16px;
+  }
+  .manager-toggle {
+    width: 100%;
+    background: var(--steel);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 4px;
+    color: var(--fog);
+    font-family: var(--cond);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 9px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.15s;
+  }
+  .manager-toggle:hover { background: #265080; }
+  .manager-toggle .toggle-arrow { transition: transform 0.2s; }
+  .manager-toggle.open .toggle-arrow { transform: rotate(180deg); }
+  .manager-drawer {
+    display: none;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    padding: 12px 16px 16px;
+  }
+  .manager-drawer.open { display: block; }
+  .manager-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .btn-save-new {
+    background: rgba(240,165,0,0.2);
+    border: 1px solid rgba(240,165,0,0.5);
+    color: var(--yellow);
+  }
+  .btn-save-new:hover { background: rgba(240,165,0,0.4); }
+  .btn-import {
+    background: rgba(100,160,255,0.15);
+    border: 1px solid rgba(100,160,255,0.4);
+    color: #9dc4ff;
+  }
+  .btn-import:hover { background: rgba(100,160,255,0.35); }
+  .slot-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .slot-empty {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 0.08em;
+    padding: 8px 0;
+  }
+  .slot-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 3px;
+    padding: 8px 12px;
+    transition: border-color 0.15s;
+  }
+  .slot-item.active-slot {
+    border-color: var(--amber);
+    background: rgba(240,165,0,0.08);
+  }
+  .slot-gc {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--yellow);
+    letter-spacing: 0.06em;
+    min-width: 80px;
+  }
+  .slot-name {
+    font-family: var(--body);
+    font-size: 0.82rem;
+    color: var(--fog);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .slot-date {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.25);
+    white-space: nowrap;
+  }
+  .btn-slot-load {
+    background: rgba(30,58,95,0.8);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: var(--fog);
+    padding: 4px 10px;
+    font-size: 0.7rem;
+  }
+  .btn-slot-load:hover { background: var(--steel); color: var(--white); }
+  .btn-slot-del {
+    background: rgba(192,57,43,0.15);
+    border: 1px solid rgba(192,57,43,0.35);
+    color: #c88;
+    padding: 4px 8px;
+    font-size: 0.7rem;
+  }
+  .btn-slot-del:hover { background: rgba(192,57,43,0.4); }
+  .btn-slot-exp {
+    background: rgba(76,175,128,0.15);
+    border: 1px solid rgba(76,175,128,0.35);
+    color: #7ecfaa;
+    padding: 4px 8px;
+    font-size: 0.7rem;
+  }
+  .btn-slot-exp:hover { background: rgba(76,175,128,0.35); }
+  .export-bar {
+    max-width: 900px;
+    margin: 10px auto 0;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .export-label {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .btn-export {
+    background: rgba(76,175,128,0.15);
+    border: 1px solid rgba(76,175,128,0.4);
+    color: #7ecfaa;
+  }
+  .btn-export:hover { background: rgba(76,175,128,0.35); }
+  .active-badge {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    background: var(--amber);
+    color: var(--navy);
+    border-radius: 2px;
+    padding: 1px 5px;
+    font-weight: bold;
+    letter-spacing: 0.06em;
+  }
+
+
+    .info-bar { grid-template-columns: 1fr; }
+    .info-field { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .cell-label { font-size: 1.1rem; }
+  }
+
+  @media print {
+    body { background: white; color: black; padding: 8px; }
+    .card { border: 1px solid #999; }
+    .info-input, .pos-select, .coord-input-inline { background: white; color: black; border: 1px solid #aaa; }
+    .looked-val, .result-val, .checksum-value { color: black; background: #eee; }
+  }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <div class="header-icon">⚓</div>
+  <div class="header-text">
+    <h1>MMSI Cache Calculator</h1>
+    <p>Maritime · Geocaching · Coordinate Calculator</p>
+  </div>
+</header>
+
+<!-- ── CACHE MANAGER DRAWER ── -->
+<div class="manager-wrap">
+  <button class="manager-toggle" id="managerToggle">
+    <span>📂 &nbsp;Saved Caches<span class="slot-count"></span></span>
+    <span class="toggle-arrow">▼</span>
+  </button>
+  <div class="manager-drawer" id="managerDrawer">
+    <div class="manager-actions">
+      <button class="btn btn-save-new" id="btnSaveNew">＋ Save current as new slot</button>
+      <button class="btn btn-import" id="btnImport">⬆ Import file</button>
+      <input type="file" id="importFileInput" accept=".json,application/json" style="display:none">
+      <span class="save-status" id="saveStatus" style="margin-left:4px;">⬤ autosave on</span>
+    </div>
+    <div class="slot-list" id="slotList">
+      <span class="slot-empty">No saved caches yet.</span>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+
+  <!-- ── INFO BAR ── -->
+  <div class="info-bar">
+    <div class="info-field">
+      <div class="info-label">Vessel Name</div>
+      <input class="info-input" id="shipName" type="text" placeholder="Name of the vessel…" maxlength="40">
+    </div>
+    <div class="info-field">
+      <div class="info-label">MMSI Number (9 digits)</div>
+      <input class="info-input" id="mmsiInput" type="text" placeholder="123456789" maxlength="9"
+             pattern="[0-9]{9}" inputmode="numeric">
+    </div>
+    <div class="info-field">
+      <div class="info-label">GC Code</div>
+      <input class="info-input" id="gcCode" type="text" placeholder="GCA93K4" maxlength="12">
+    </div>
+  </div>
+
+  <!-- ── MMSI DIGIT STRIP ── -->
+  <div class="mmsi-row">
+    <span class="mmsi-row-label">Digit position →</span>
+    <div class="mmsi-digits" id="digitStrip">
+      <!-- filled by JS -->
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       BLOCK 1 : A – D   (N latitude)
+  ═══════════════════════════════════════════════════════ -->
+  <div class="section-header">
+    <span class="section-letters">A . B &nbsp; C &nbsp; D</span>
+    <div class="section-coord">
+      N &nbsp;<input class="coord-input-inline" id="coord-ad-deg" type="text" placeholder="51" maxlength="3">°
+      &nbsp;<input class="coord-input-inline coord-narrow" id="coord-ad-min-int" type="text" placeholder="0" maxlength="2">
+      <span class="coord-var" id="cv-A">A</span>.<span class="coord-var" id="cv-B">B</span><span class="coord-var" id="cv-C">C</span><span class="coord-var" id="cv-D">D</span> ′
+    </div>
+  </div>
+
+  <table class="calc-table" id="table-ad">
+    <thead>
+      <tr>
+        <th class="th-label">Var</th>
+        <th></th>
+        <th>Base<br>position</th>
+        <th>Base<br>value</th>
+        <th class="op-header">+</th>
+        <th>+ position</th>
+        <th>+ value</th>
+        <th class="op-header">−</th>
+        <th>− position</th>
+        <th>− value</th>
+        <th class="op-header">=</th>
+        <th>Result</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="rows-ad">
+      <!-- rows A B C D injected by JS -->
+    </tbody>
+  </table>
+
+  <!-- ══════════════════════════════════════════════════════
+       BLOCK 2 : E – H   (E longitude)
+  ═══════════════════════════════════════════════════════ -->
+  <div class="section-header" style="border-top: 2px solid rgba(255,255,255,0.1);">
+    <span class="section-letters">E . &nbsp;F &nbsp; G &nbsp; H</span>
+    <div class="section-coord">
+      E &nbsp;<input class="coord-input-inline" id="coord-eh-deg" type="text" placeholder="004" maxlength="3">°
+      &nbsp;<input class="coord-input-inline coord-narrow" id="coord-eh-min-int" type="text" placeholder="1" maxlength="2">
+      <span class="coord-var" id="cv-E">E</span><span class="coord-var" id="cv-F">F</span><span class="coord-var" id="cv-G">G</span><span class="coord-var" id="cv-H">H</span> ′
+    </div>
+  </div>
+
+  <table class="calc-table" id="table-eh">
+    <thead>
+      <tr>
+        <th class="th-label">Var</th>
+        <th></th>
+        <th>Base<br>position</th>
+        <th>Base<br>value</th>
+        <th class="op-header">+</th>
+        <th>+ position</th>
+        <th>+ value</th>
+        <th class="op-header">−</th>
+        <th>− position</th>
+        <th>− value</th>
+        <th class="op-header">=</th>
+        <th>Result</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="rows-eh">
+      <!-- rows E F G H injected by JS -->
+    </tbody>
+  </table>
+
+  <!-- ── CHECKSUM ── -->
+  <div class="checksum-bar">
+    <span class="checksum-formula" id="checksumFormula">A+B+C+D+E+F+G+H</span>
+    <span class="checksum-label">Checksum =</span>
+    <span class="checksum-value" id="checksumValue">—</span>
+  </div>
+
+</div>
+
+<div class="storage-bar">
+  <span id="lastSavedLabel" class="save-status"></span>
+  <button class="btn btn-clear" id="btnClear" title="Clear all fields and saved data">✕ &nbsp;Clear all</button>
+</div>
+<div class="export-bar">
+  <span class="export-label">Export current:</span>
+  <button class="btn btn-export" id="btnExportFull">⬇ With MMSI</button>
+  <button class="btn btn-export" id="btnExportTemplate">⬇ As template (no MMSI)</button>
+</div>
+<div class="page-footer">
+  <span>MMSI Cache Calculator · offline use · generated by Claude</span>
+  <span id="lastSavedLabel"></span>
+</div>
+
+<script>
+// ── CONSTANTS ──────────────────────────────────────────────────────────────
+const ROWS        = ['A','B','C','D','E','F','G','H'];
+const SLOTS_KEY   = 'mmsi-cache-slots-v1';
+const CURRENT_KEY = 'mmsi-cache-current-v1';
+const LEGACY_KEY  = 'mmsi-cache-calc-v1';
+
+// ── RESULTS STATE (computed values) ────────────────────────────────────────
+const resultState = {};
+ROWS.forEach(r => resultState[r] = null);
+
+// ── SLOT HELPERS ───────────────────────────────────────────────────────────
+let currentSlotId = null;
+let saveTimer = null;
+
+function loadSlots() {
+  try { return JSON.parse(localStorage.getItem(SLOTS_KEY)) || []; }
+  catch(e) { return []; }
+}
+function saveSlots(slots) {
+  localStorage.setItem(SLOTS_KEY, JSON.stringify(slots));
+}
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+}
+
+// ── COLLECT / APPLY FORM DATA ──────────────────────────────────────────────
+function collectFormData() {
+  const data = {
+    shipName:      document.getElementById('shipName').value,
+    mmsi:          document.getElementById('mmsiInput').value,
+    gcCode:        document.getElementById('gcCode').value,
+    coordAdDeg:    document.getElementById('coord-ad-deg').value,
+    coordAdMinInt: document.getElementById('coord-ad-min-int').value,
+    coordEhDeg:    document.getElementById('coord-eh-deg').value,
+    coordEhMinInt: document.getElementById('coord-eh-min-int').value,
+    positions:     {}
+  };
+  ROWS.forEach(l => {
+    data.positions[l] = {
+      base: document.getElementById('base-pos-'+l)?.value || '',
+      add:  document.getElementById('add-pos-'+l)?.value  || '',
+      sub:  document.getElementById('sub-pos-'+l)?.value  || ''
+    };
+  });
+  return data;
+}
+
+function applyFormData(data) {
+  if (!data) return;
+  document.getElementById('shipName').value         = data.shipName      || '';
+  document.getElementById('mmsiInput').value        = data.mmsi          || '';
+  document.getElementById('gcCode').value           = data.gcCode        || '';
+  document.getElementById('coord-ad-deg').value     = data.coordAdDeg    || '';
+  document.getElementById('coord-ad-min-int').value = data.coordAdMinInt || '';
+  document.getElementById('coord-eh-deg').value     = data.coordEhDeg    || '';
+  document.getElementById('coord-eh-min-int').value = data.coordEhMinInt || '';
+  if (data.positions) {
+    ROWS.forEach(l => {
+      const p = data.positions[l];
+      if (!p) return;
+      const bEl = document.getElementById('base-pos-'+l);
+      const aEl = document.getElementById('add-pos-'+l);
+      const sEl = document.getElementById('sub-pos-'+l);
+      if (bEl) bEl.value = p.base || '';
+      if (aEl) aEl.value = p.add  || '';
+      if (sEl) sEl.value = p.sub  || '';
+    });
+  }
+}
+
+function clearFormFields() {
+  ['shipName','mmsiInput','gcCode','coord-ad-deg','coord-ad-min-int','coord-eh-deg','coord-eh-min-int'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ROWS.forEach(l => {
+    ['base-pos-','add-pos-','sub-pos-'].forEach(p => {
+      const el = document.getElementById(p+l);
+      if (el) el.value = '';
+    });
+  });
+}
+
+// ── AUTOSAVE CURRENT SLOT ─────────────────────────────────────────────────
+function saveCurrentSlot() {
+  if (!currentSlotId) return;
+  const slots = loadSlots();
+  const idx = slots.findIndex(s => s.id === currentSlotId);
+  if (idx === -1) return;
+  slots[idx].data    = collectFormData();
+  slots[idx].savedAt = Date.now();
+  saveSlots(slots);
+  showSaveStatus('saved');
+  renderSlotList();
+}
+
+function scheduleSave() {
+  showSaveStatus('saving');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveCurrentSlot, 800);
+}
+
+// ── SAVE AS NEW SLOT ──────────────────────────────────────────────────────
+function saveAsNewSlot() {
+  const data   = collectFormData();
+  const label  = (data.gcCode || '—') + (data.shipName ? '  ·  ' + data.shipName : '');
+  const slots  = loadSlots();
+  const id     = genId();
+  slots.push({ id, label, data, savedAt: Date.now() });
+  saveSlots(slots);
+  currentSlotId = id;
+  localStorage.setItem(CURRENT_KEY, id);
+  renderSlotList();
+  showSaveStatus('saved');
+}
+
+// ── LOAD A SLOT ───────────────────────────────────────────────────────────
+function loadSlot(id) {
+  const slots = loadSlots();
+  const slot  = slots.find(s => s.id === id);
+  if (!slot) return;
+  clearFormFields();
+  applyFormData(slot.data);
+  currentSlotId = id;
+  localStorage.setItem(CURRENT_KEY, id);
+  updateDigitStrip(document.getElementById('mmsiInput').value);
+  recalcAll();
+  renderSlotList();
+  showSaveStatus('loaded');
+}
+
+// ── DELETE A SLOT ─────────────────────────────────────────────────────────
+function deleteSlot(id) {
+  const slots = loadSlots().filter(s => s.id !== id);
+  saveSlots(slots);
+  if (currentSlotId === id) {
+    currentSlotId = null;
+    localStorage.removeItem(CURRENT_KEY);
+  }
+  renderSlotList();
+}
+
+// ── RENDER SLOT LIST ──────────────────────────────────────────────────────
+function renderSlotList() {
+  const slots   = loadSlots();
+  const list    = document.getElementById('slotList');
+  const toggle  = document.getElementById('managerToggle');
+  // update badge count on toggle button
+  const countSpan = toggle.querySelector('.slot-count');
+  if (countSpan) countSpan.textContent = slots.length ? ' (' + slots.length + ')' : '';
+
+  if (!slots.length) {
+    list.innerHTML = '<span class="slot-empty">No saved caches yet — use "Save current as new slot" to save one.</span>';
+    return;
+  }
+  list.innerHTML = '';
+  // newest first
+  [...slots].reverse().forEach(slot => {
+    const isActive = slot.id === currentSlotId;
+    const d = new Date(slot.savedAt);
+    const dateStr = d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
+                  + ' ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const item = document.createElement('div');
+    item.className = 'slot-item' + (isActive ? ' active-slot' : '');
+    const gc   = slot.data?.gcCode   || '—';
+    const name = slot.data?.shipName || '(no name)';
+    item.innerHTML = `
+      <span class="slot-gc">${gc}</span>
+      <span class="slot-name">${name}</span>
+      ${isActive ? '<span class="active-badge">ACTIVE</span>' : ''}
+      <span class="slot-date">${dateStr}</span>
+      <button class="btn btn-slot-load" data-id="${slot.id}">${isActive ? '↺ Reload' : '▶ Load'}</button>
+      <button class="btn btn-slot-exp"  data-id="${slot.id}" data-mmsi="1" title="Export with MMSI">⬇ Full</button>
+      <button class="btn btn-slot-exp"  data-id="${slot.id}" data-mmsi="0" title="Export as template">⬇ Tmpl</button>
+      <button class="btn btn-slot-del"  data-id="${slot.id}">✕</button>
+    `;
+    list.appendChild(item);
+  });
+
+  // wire slot buttons
+  list.querySelectorAll('.btn-slot-load').forEach(btn =>
+    btn.addEventListener('click', () => loadSlot(btn.dataset.id)));
+  list.querySelectorAll('.btn-slot-exp').forEach(btn =>
+    btn.addEventListener('click', () => exportSlot(btn.dataset.id, btn.dataset.mmsi === '1')));
+  list.querySelectorAll('.btn-slot-del').forEach(btn =>
+    btn.addEventListener('click', () => {
+      if (confirm('Delete this saved cache?')) deleteSlot(btn.dataset.id);
+    }));
+}
+
+// ── STATUS INDICATOR ──────────────────────────────────────────────────────
+function showSaveStatus(state) {
+  const el = document.getElementById('saveStatus');
+  const lb = document.getElementById('lastSavedLabel');
+  el.className = 'save-status';
+  if (state === 'saving') {
+    el.textContent = '◌ saving…';
+    el.classList.add('saving');
+  } else if (state === 'saved') {
+    const t = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    el.textContent = '⬤ saved';
+    el.classList.add('saved');
+    if (lb) lb.textContent = 'last saved: ' + t;
+    setTimeout(() => { el.textContent = '⬤ autosave on'; el.className = 'save-status'; }, 3000);
+  } else if (state === 'loaded') {
+    el.textContent = '⬤ loaded';
+    el.classList.add('saved');
+    setTimeout(() => { el.textContent = '⬤ autosave on'; el.className = 'save-status'; }, 2500);
+  } else if (state === 'error') {
+    el.textContent = '⚠ save failed'; el.style.color='#e55'; el.style.opacity='1';
+  } else if (state === 'cleared') {
+    el.textContent = '⬤ cleared';
+    el.classList.add('saved');
+    if (lb) lb.textContent = '';
+    setTimeout(() => { el.textContent = '⬤ autosave on'; el.className = 'save-status'; }, 2000);
+  }
+}
+
+// ── DIGIT STRIP ────────────────────────────────────────────────────────────
+function buildDigitStrip() {
+  const strip = document.getElementById('digitStrip');
+  strip.innerHTML = '';
+  for (let i = 1; i <= 9; i++) {
+    const box = document.createElement('div');
+    box.className = 'digit-box';
+    box.innerHTML = `<span class="digit-pos">${i}</span><span class="digit-val" id="dv${i}">·</span>`;
+    strip.appendChild(box);
+  }
+}
+
+function updateDigitStrip(mmsi) {
+  for (let i = 1; i <= 9; i++) {
+    const el = document.getElementById('dv' + i);
+    el.textContent = mmsi.length >= i ? mmsi[i-1] : '·';
+  }
+}
+
+// ── MMSI LOOKUP ────────────────────────────────────────────────────────────
+function getDigit(pos) {
+  const mmsi = document.getElementById('mmsiInput').value.trim();
+  if (!pos || isNaN(pos) || pos < 1 || pos > 9) return null;
+  if (mmsi.length < pos) return null;
+  return parseInt(mmsi[pos - 1], 10);
+}
+
+// ── BUILD A TABLE ROW ──────────────────────────────────────────────────────
+function makePositionSelect(id) {
+  let opts = '<option value="">—</option>';
+  for (let i = 1; i <= 9; i++) {
+    opts += `<option value="${i}">${i}</option>`;
+  }
+  return `<select class="pos-select" id="${id}">${opts}</select>`;
+}
+
+function buildRow(letter, tbody) {
+  const tr = document.createElement('tr');
+  tr.id = 'row-' + letter;
+  tr.innerHTML = `
+    <td class="cell-label">${letter}</td>
+    <td class="cell-eq">=</td>
+    <td class="cell-pos">${makePositionSelect('base-pos-'+letter)}</td>
+    <td class="cell-looked"><span class="looked-val" id="base-val-${letter}">·</span></td>
+    <td class="cell-op">+</td>
+    <td class="cell-pos">${makePositionSelect('add-pos-'+letter)}</td>
+    <td class="cell-looked"><span class="looked-val" id="add-val-${letter}">·</span></td>
+    <td class="cell-op">−</td>
+    <td class="cell-pos">${makePositionSelect('sub-pos-'+letter)}</td>
+    <td class="cell-looked"><span class="looked-val" id="sub-val-${letter}">·</span></td>
+    <td class="cell-op">=</td>
+    <td class="cell-result"><span class="result-val" id="result-${letter}">·</span></td>
+    <td class="cell-letter-end">${letter}</td>
+  `;
+  tbody.appendChild(tr);
+}
+
+function buildAllRows() {
+  const adBody = document.getElementById('rows-ad');
+  const ehBody = document.getElementById('rows-eh');
+  ['A','B','C','D'].forEach(l => buildRow(l, adBody));
+  ['E','F','G','H'].forEach(l => buildRow(l, ehBody));
+}
+
+// ── RECALCULATE ONE ROW ────────────────────────────────────────────────────
+function recalcRow(letter) {
+  const bPos = parseInt(document.getElementById('base-pos-'+letter)?.value);
+  const aPos = parseInt(document.getElementById('add-pos-'+letter)?.value);
+  const sPos = parseInt(document.getElementById('sub-pos-'+letter)?.value);
+
+  const bVal = isNaN(bPos) ? null : getDigit(bPos);
+  const aVal = isNaN(aPos) ? null : getDigit(aPos);
+  const sVal = isNaN(sPos) ? null : getDigit(sPos);
+
+  document.getElementById('base-val-'+letter).textContent = bVal !== null ? bVal : '·';
+  document.getElementById('add-val-'+letter).textContent  = aVal !== null ? aVal : '·';
+  document.getElementById('sub-val-'+letter).textContent  = sVal !== null ? sVal : '·';
+
+  const resEl = document.getElementById('result-'+letter);
+  if (bVal !== null) {
+    const result = bVal + (aVal !== null ? aVal : 0) - (sVal !== null ? sVal : 0);
+    resEl.textContent = result;
+    resultState[letter] = result;
+  } else {
+    resEl.textContent = '·';
+    resultState[letter] = null;
+  }
+}
+
+function recalcAll() {
+  ROWS.forEach(recalcRow);
+  updateChecksum();
+  updateCoordVars();
+}
+
+// ── CHECKSUM (plain sum of all results) ────────────────────────────────────
+function updateChecksum() {
+  let sum = 0;
+  let anyDefined = false;
+  ROWS.forEach(l => {
+    if (resultState[l] !== null && resultState[l] !== undefined) {
+      sum += resultState[l];
+      anyDefined = true;
+    }
+  });
+  const el = document.getElementById('checksumValue');
+  el.textContent = anyDefined ? sum : '—';
+  el.title = '';
+}
+
+// ── UPDATE LIVE COORD VARS ─────────────────────────────────────────────────
+function updateCoordVars() {
+  ROWS.forEach(l => {
+    const el = document.getElementById('cv-' + l);
+    if (!el) return;
+    const val = resultState[l];
+    if (val !== null && val !== undefined) {
+      el.textContent = val;
+      el.classList.remove('pending');
+    } else {
+      el.textContent = l;
+      el.classList.add('pending');
+    }
+  });
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────────────
+function downloadJson(data, filename) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+function exportCurrent(withMmsi) {
+  const data = collectFormData();
+  if (!withMmsi) data.mmsi = '';
+  const gc     = data.gcCode || 'cache';
+  const suffix = withMmsi ? 'solved' : 'template';
+  downloadJson(data, `MMSI-${gc}-${suffix}.json`);
+}
+
+function exportSlot(id, withMmsi) {
+  const slots = loadSlots();
+  const slot  = slots.find(s => s.id === id);
+  if (!slot) return;
+  const data   = JSON.parse(JSON.stringify(slot.data));
+  if (!withMmsi) data.mmsi = '';
+  const gc     = data.gcCode || 'cache';
+  const suffix = withMmsi ? 'solved' : 'template';
+  downloadJson(data, `MMSI-${gc}-${suffix}.json`);
+}
+
+// ── IMPORT ────────────────────────────────────────────────────────────────
+function importFromFile(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.positions) throw new Error('Not a valid MMSI cache file.');
+      const slots = loadSlots();
+      const id    = genId();
+      const gc    = data.gcCode   || '—';
+      const name  = data.shipName || '';
+      slots.push({ id, label: gc + (name ? '  ·  ' + name : ''), data, savedAt: Date.now() });
+      saveSlots(slots);
+      currentSlotId = id;
+      localStorage.setItem(CURRENT_KEY, id);
+      applyFormData(data);
+      updateDigitStrip(document.getElementById('mmsiInput').value);
+      recalcAll();
+      renderSlotList();
+      showSaveStatus('loaded');
+      document.getElementById('managerDrawer').classList.add('open');
+      document.getElementById('managerToggle').classList.add('open');
+    } catch(err) {
+      alert('Could not import: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── CLEAR ALL ─────────────────────────────────────────────────────────────
+function clearAll() {
+  if (!confirm('Clear all fields? (Your saved caches are kept.)')) return;
+  currentSlotId = null;
+  localStorage.removeItem(CURRENT_KEY);
+  clearFormFields();
+  updateDigitStrip('');
+  recalcAll();
+  renderSlotList();
+  showSaveStatus('cleared');
+}
+
+function wireEvents() {
+  ['shipName','gcCode','coord-ad-deg','coord-ad-min-int','coord-eh-deg','coord-eh-min-int'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', scheduleSave);
+  });
+
+  document.getElementById('mmsiInput').addEventListener('input', function() {
+    const val = this.value.replace(/\D/g, '').slice(0, 9);
+    this.value = val;
+    updateDigitStrip(val);
+    recalcAll();
+    scheduleSave();
+  });
+
+  ROWS.forEach(letter => {
+    ['base-pos-','add-pos-','sub-pos-'].forEach(prefix => {
+      const el = document.getElementById(prefix + letter);
+      if (el) el.addEventListener('change', () => {
+        recalcRow(letter);
+        updateChecksum();
+        updateCoordVars();
+        scheduleSave();
+      });
+    });
+  });
+
+  document.getElementById('btnClear').addEventListener('click', clearAll);
+
+  document.getElementById('btnSaveNew').addEventListener('click', saveAsNewSlot);
+
+  document.getElementById('btnExportFull').addEventListener('click', () => exportCurrent(true));
+  document.getElementById('btnExportTemplate').addEventListener('click', () => exportCurrent(false));
+
+  document.getElementById('btnImport').addEventListener('click', () =>
+    document.getElementById('importFileInput').click());
+  document.getElementById('importFileInput').addEventListener('change', function() {
+    if (this.files[0]) { importFromFile(this.files[0]); this.value = ''; }
+  });
+
+  // drawer toggle
+  const toggle  = document.getElementById('managerToggle');
+  const drawer  = document.getElementById('managerDrawer');
+  toggle.addEventListener('click', () => {
+    const isOpen = drawer.classList.toggle('open');
+    toggle.classList.toggle('open', isOpen);
+  });
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+buildDigitStrip();
+buildAllRows();
+wireEvents();
+
+// Migrate legacy single-slot save if present
+(function migrateLegacy() {
+  try {
+    const raw = localStorage.getItem(LEGACY_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    const slots = loadSlots();
+    // only migrate if no slots exist yet
+    if (!slots.length) {
+      const id = genId();
+      const gc   = data.gcCode   || '—';
+      const name = data.shipName || '';
+      slots.push({ id, label: gc + (name ? '  ·  '+name : ''), data, savedAt: Date.now() });
+      saveSlots(slots);
+      localStorage.setItem(CURRENT_KEY, id);
+    }
+    localStorage.removeItem(LEGACY_KEY);
+  } catch(e) {}
+})();
+
+// Restore active slot
+(function restoreSession() {
+  const storedId = localStorage.getItem(CURRENT_KEY);
+  if (!storedId) { renderSlotList(); return; }
+  const slots = loadSlots();
+  const slot  = slots.find(s => s.id === storedId);
+  if (!slot) { renderSlotList(); return; }
+  currentSlotId = storedId;
+  applyFormData(slot.data);
+  updateDigitStrip(document.getElementById('mmsiInput').value);
+  recalcAll();
+  renderSlotList();
+  const lb = document.getElementById('lastSavedLabel');
+  if (lb) lb.textContent = 'session restored';
+})();
+</script>
+</body>
+</html>
