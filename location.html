@@ -26,8 +26,10 @@
 
     <script>
         const map = L.map('map').setView([51.22, 4.41], 12);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
         }).addTo(map);
 
         let markers = [];
@@ -94,6 +96,15 @@
             markers.forEach(marker => map.removeLayer(marker));
             markers = [];
         }
+
+        window.addEventListener('load', function() {
+            var params = new URLSearchParams(window.location.search);
+            var coord = params.get('coord');
+            if (coord) {
+                document.getElementById('coordinates').value = coord;
+                plotCoordinates();
+            }
+        });
     </script>
 </body>
 </html>

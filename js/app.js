@@ -129,7 +129,9 @@ function updateWaypoints() {
         state.waypoints.push({
             northSouth: 'N',
             eastWest: 'E',
-            coordValues: ['','','','','','','','','','','','','','','']
+            coordValues: ['','','','','','','','','','','','','','',''],
+            collapsedValues: ['','','','','',''],
+            collapsed: false
         });
     }
     
@@ -146,47 +148,89 @@ function updateWaypoints() {
 function createWaypointCard(wpIndex) {
     var card = document.createElement('div');
     card.className = 'waypoint-card';
-    
+
     var header = document.createElement('div');
     header.className = 'waypoint-header';
-    
+
     var title = document.createElement('div');
     title.className = 'waypoint-title';
     title.textContent = 'Waypoint ' + (wpIndex + 1);
     header.appendChild(title);
-    
+
+    var collapseBtn = document.createElement('button');
+    collapseBtn.className = 'collapse-toggle-btn';
+    collapseBtn.textContent = state.waypoints[wpIndex].collapsed ? '▼ Expand' : '▲ Collapse';
+    collapseBtn.onclick = (function(idx) { return function() { toggleWaypointCollapse(idx); }; })(wpIndex);
+    header.appendChild(collapseBtn);
+
     card.appendChild(header);
-    
+
     var resultBox = document.createElement('div');
     resultBox.className = 'waypoint-result';
-    
+
     var resultLabel = document.createElement('div');
     resultLabel.className = 'waypoint-result-label';
     resultLabel.textContent = 'Calculated Coordinate:';
-    
+
     var resultValue = document.createElement('div');
     resultValue.className = 'waypoint-result-value';
     resultValue.id = 'wpResult' + wpIndex;
     resultValue.textContent = 'N ° . E ° .';
-    
+
     resultBox.appendChild(resultLabel);
     resultBox.appendChild(resultValue);
+
+    var mapBtnRow = document.createElement('div');
+    mapBtnRow.style.marginTop = '0.5rem';
+    var mapBtn = document.createElement('button');
+    mapBtn.className = 'map-toggle-btn';
+    mapBtn.id = 'wpMapToggle' + wpIndex;
+    mapBtn.textContent = '📍 Show on Map';
+    mapBtn.onclick = (function(idx) { return function() { toggleMap(idx); }; })(wpIndex);
+    mapBtnRow.appendChild(mapBtn);
+    resultBox.appendChild(mapBtnRow);
+
     card.appendChild(resultBox);
-    
+
+    var mapContainer = document.createElement('div');
+    mapContainer.id = 'wpMapContainer' + wpIndex;
+    mapContainer.className = 'map-container';
+    mapContainer.style.display = 'none';
+    var mapIframe = document.createElement('iframe');
+    mapIframe.id = 'wpMapIframe' + wpIndex;
+    mapIframe.className = 'map-iframe';
+    mapIframe.frameBorder = '0';
+    mapContainer.appendChild(mapIframe);
+    card.appendChild(mapContainer);
+
     var helpText = document.createElement('p');
     helpText.className = 'help-text';
-    helpText.textContent = 'Enter numbers or formulas using parameters (e.g., A+B*2). Format: N DD° MM.MMM E DDD° MM.MMM';
+    helpText.textContent = state.waypoints[wpIndex].collapsed
+        ? 'Grouped mode: enter full values or formulas per field (e.g., A+B). Format: N DD° MM.MMM E DDD° MM.MMM'
+        : 'Digit mode: enter one digit or formula per cell (e.g., A+B*2). Format: N DD° MM.MMM E DDD° MM.MMM';
     card.appendChild(helpText);
-    
+
+    if (state.waypoints[wpIndex].collapsed) {
+        createCollapsedCoordRows(wpIndex, card);
+    } else {
+        createExpandedCoordRows(wpIndex, card);
+    }
+
+    updateWaypointCoordinate(wpIndex);
+
+    return card;
+}
+
+function createExpandedCoordRows(wpIndex, card) {
     var coordRow1 = document.createElement('div');
     coordRow1.className = 'coord-row';
-    
+
     var toggleNS = document.createElement('button');
     toggleNS.className = 'toggle-btn';
     toggleNS.textContent = state.waypoints[wpIndex].northSouth;
     toggleNS.onclick = function() { toggleDirection(wpIndex, 'northSouth'); };
     coordRow1.appendChild(toggleNS);
-    
+
     for (var i = 0; i < 7; i++) {
         if (i === 2) {
             var sep = document.createElement('span');
@@ -199,7 +243,6 @@ function createWaypointCard(wpIndex) {
             sep.textContent = '.';
             coordRow1.appendChild(sep);
         }
-        
         var input = document.createElement('input');
         input.className = 'coord-input';
         input.dataset.wpindex = wpIndex;
@@ -209,18 +252,17 @@ function createWaypointCard(wpIndex) {
         input.addEventListener('input', handleCoordInput);
         coordRow1.appendChild(input);
     }
-    
     card.appendChild(coordRow1);
-    
+
     var coordRow2 = document.createElement('div');
     coordRow2.className = 'coord-row';
-    
+
     var toggleEW = document.createElement('button');
     toggleEW.className = 'toggle-btn';
     toggleEW.textContent = state.waypoints[wpIndex].eastWest;
     toggleEW.onclick = function() { toggleDirection(wpIndex, 'eastWest'); };
     coordRow2.appendChild(toggleEW);
-    
+
     for (var i = 7; i < 15; i++) {
         if (i === 10) {
             var sep = document.createElement('span');
@@ -233,7 +275,6 @@ function createWaypointCard(wpIndex) {
             sep.textContent = '.';
             coordRow2.appendChild(sep);
         }
-        
         var input = document.createElement('input');
         input.className = 'coord-input';
         input.dataset.wpindex = wpIndex;
@@ -243,12 +284,82 @@ function createWaypointCard(wpIndex) {
         input.addEventListener('input', handleCoordInput);
         coordRow2.appendChild(input);
     }
-    
     card.appendChild(coordRow2);
-    
+}
+
+function createCollapsedCoordRows(wpIndex, card) {
+    var wp = state.waypoints[wpIndex];
+    var cv = wp.collapsedValues || ['','','','','',''];
+
+    function makeGroupedInput(cindex, placeholder) {
+        var inp = document.createElement('input');
+        inp.className = 'coord-input collapsed-input';
+        inp.dataset.wpindex = wpIndex;
+        inp.dataset.cindex = cindex;
+        inp.value = cv[cindex] || '';
+        inp.placeholder = placeholder;
+        inp.addEventListener('input', handleCollapsedCoordInput);
+        return inp;
+    }
+
+    var coordRow1 = document.createElement('div');
+    coordRow1.className = 'coord-row';
+    var toggleNS = document.createElement('button');
+    toggleNS.className = 'toggle-btn';
+    toggleNS.textContent = wp.northSouth;
+    toggleNS.onclick = function() { toggleDirection(wpIndex, 'northSouth'); };
+    coordRow1.appendChild(toggleNS);
+    coordRow1.appendChild(makeGroupedInput(0, 'DD'));
+    var s1 = document.createElement('span'); s1.className = 'separator'; s1.textContent = '°';
+    coordRow1.appendChild(s1);
+    coordRow1.appendChild(makeGroupedInput(1, 'MM'));
+    var s2 = document.createElement('span'); s2.className = 'separator'; s2.textContent = '.';
+    coordRow1.appendChild(s2);
+    coordRow1.appendChild(makeGroupedInput(2, 'MMM'));
+    card.appendChild(coordRow1);
+
+    var coordRow2 = document.createElement('div');
+    coordRow2.className = 'coord-row';
+    var toggleEW = document.createElement('button');
+    toggleEW.className = 'toggle-btn';
+    toggleEW.textContent = wp.eastWest;
+    toggleEW.onclick = function() { toggleDirection(wpIndex, 'eastWest'); };
+    coordRow2.appendChild(toggleEW);
+    coordRow2.appendChild(makeGroupedInput(3, 'DDD'));
+    var s3 = document.createElement('span'); s3.className = 'separator'; s3.textContent = '°';
+    coordRow2.appendChild(s3);
+    coordRow2.appendChild(makeGroupedInput(4, 'MM'));
+    var s4 = document.createElement('span'); s4.className = 'separator'; s4.textContent = '.';
+    coordRow2.appendChild(s4);
+    coordRow2.appendChild(makeGroupedInput(5, 'MMM'));
+    card.appendChild(coordRow2);
+}
+
+function handleCollapsedCoordInput(e) {
+    var wpIndex = parseInt(e.target.dataset.wpindex);
+    var cindex = parseInt(e.target.dataset.cindex);
+    state.waypoints[wpIndex].collapsedValues[cindex] = e.target.value;
     updateWaypointCoordinate(wpIndex);
-    
-    return card;
+}
+
+function toggleWaypointCollapse(wpIndex) {
+    state.waypoints[wpIndex].collapsed = !state.waypoints[wpIndex].collapsed;
+    updateWaypoints();
+}
+
+function toggleMap(wpIndex) {
+    var container = document.getElementById('wpMapContainer' + wpIndex);
+    var btn = document.getElementById('wpMapToggle' + wpIndex);
+    var iframe = document.getElementById('wpMapIframe' + wpIndex);
+    if (container.style.display === 'none') {
+        var coord = document.getElementById('wpResult' + wpIndex).textContent;
+        iframe.src = 'location.html?coord=' + encodeURIComponent(coord);
+        container.style.display = 'block';
+        btn.textContent = '🗺️ Hide Map';
+    } else {
+        container.style.display = 'none';
+        btn.textContent = '📍 Show on Map';
+    }
 }
 
 function evaluateFormula(formula) {
@@ -275,11 +386,22 @@ function evaluateFormula(formula) {
 
 function updateWaypointCoordinate(wpIndex) {
     var wp = state.waypoints[wpIndex];
-    var vals = [];
-    for (var i = 0; i < wp.coordValues.length; i++) {
-        vals.push(evaluateFormula(wp.coordValues[i]));
+    var coord;
+
+    if (wp.collapsed) {
+        var cv = wp.collapsedValues || ['','','','','',''];
+        coord = wp.northSouth + ' ' + (evaluateFormula(cv[0]) || '') + '° ' +
+                (evaluateFormula(cv[1]) || '') + '.' + (evaluateFormula(cv[2]) || '') + ' ' +
+                wp.eastWest + ' ' + (evaluateFormula(cv[3]) || '') + '° ' +
+                (evaluateFormula(cv[4]) || '') + '.' + (evaluateFormula(cv[5]) || '');
+    } else {
+        var vals = [];
+        for (var i = 0; i < wp.coordValues.length; i++) {
+            vals.push(evaluateFormula(wp.coordValues[i]));
+        }
+        coord = wp.northSouth + ' ' + vals[0] + vals[1] + '° ' + vals[2] + vals[3] + '.' + vals[4] + vals[5] + vals[6] + ' ' + wp.eastWest + ' ' + vals[7] + vals[8] + vals[9] + '° ' + vals[10] + vals[11] + '.' + vals[12] + vals[13] + vals[14];
     }
-    var coord = wp.northSouth + ' ' + vals[0] + vals[1] + '° ' + vals[2] + vals[3] + '.' + vals[4] + vals[5] + vals[6] + ' ' + wp.eastWest + ' ' + vals[7] + vals[8] + vals[9] + '° ' + vals[10] + vals[11] + '.' + vals[12] + vals[13] + vals[14];
+
     var resultElement = document.getElementById('wpResult' + wpIndex);
     if (resultElement) {
         resultElement.textContent = coord;
@@ -645,7 +767,9 @@ function applyLoadedData(data) {
     state.paramValues = data.paramValues || {};
     state.paramComments = data.paramComments || {};
     state.waypointCount = data.waypointCount || 1;
-    state.waypoints = data.waypoints || [];
+    state.waypoints = (data.waypoints || []).map(function(wp) {
+        return Object.assign({ collapsedValues: ['','','','','',''], collapsed: false }, wp);
+    });
     
     document.getElementById('cacheCode').value = state.cacheCode;
     document.getElementById('cacheName').value = state.cacheName;
